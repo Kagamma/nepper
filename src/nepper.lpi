@@ -64,6 +64,31 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Formats"/>
       </Unit>
+      <Unit>
+        <Filename Value="timer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Timer"/>
+      </Unit>
+      <Unit>
+        <Filename Value="player.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Player"/>
+      </Unit>
+      <Unit>
+        <Filename Value="dialogs.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Dialogs"/>
+      </Unit>
+      <Unit>
+        <Filename Value="edpattern.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="EdPattern"/>
+      </Unit>
+      <Unit>
+        <Filename Value="edsong.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="EdSong"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

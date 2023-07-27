@@ -4,9 +4,6 @@ unit Input;
 
 interface
 
-type
-  TInputKind = (ikText, ikHex2, ikYesNo);
-
 var
   InputCursor: Byte = 1;
 

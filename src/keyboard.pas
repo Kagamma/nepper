@@ -207,9 +207,20 @@ end;
 initialization
   GetIntVec($23, OldCtrlBreakHandle);
   SetIntVec($23, @BlankHandle);
+  // Fast typing rate
+  asm
+    mov ax,$0305
+    xor bx,bx
+    int $16
+  end;
 
 finalization
   SetIntVec($23, OldCtrlBreakHandle);
+  // Default typing rate
+  asm
+    mov ax,$0300
+    int $16
+  end;
 
 end.
 

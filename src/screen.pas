@@ -7,17 +7,24 @@ interface
 var
   ScreenPointer: PWord;
 
+procedure ClrScr;
 procedure SetCursorPosition(const X, Y: Byte);
 procedure IncCursorX;
 procedure DecCursorX;
 procedure WriteText(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
 procedure WriteTextBack(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
+procedure WriteTextMid(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
 
 implementation
 
 var
   CursorX,
   CursorY: Byte;
+
+procedure ClrScr;
+begin
+  FillByte(ScreenPointer[0], 80*25*2, 0);
+end;
 
 procedure SetCursorPosition(const X, Y: Byte); assembler;
 asm
@@ -78,7 +85,28 @@ begin
       P^ := W + Byte(S[I])
     else
       P^ := W;
-    Dec(P);
+    Dec(P);                              
+  ScreenPointer := Ptr($B800, $0000);
+  end;
+end;
+
+procedure WriteTextMid(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
+var
+  I: Byte;
+  P: PWord;
+  W: Word;
+begin
+  if MaxLen = 0 then
+    MaxLen := Length(S);
+  P := ScreenPointer + (80 * Y + (X - MaxLen div 2));
+  W := Attr shl 8;
+  for I := 1 to MaxLen do
+  begin
+    if I <= Length(S) then
+      P^ := W + Byte(S[I])
+    else
+      P^ := W;
+    Inc(P);
   end;
 end;
 

@@ -9,6 +9,7 @@ const
   ADLIB_PORT_DATA = $0389;
   ADLIB_MODULATOR = 0;
   ADLIB_CARRIER = 1;
+  ADLIB_MAX_OCTAVE = 8;
 
   ADLIB_SLOTS: array[0..8, 0..1] of Byte = (
     ($00, $03),
@@ -22,8 +23,9 @@ const
     ($12, $15)
   );
 
-  ADLIB_FREQ_TABLE: array[0..11] of Word = (
-    $159, $16B,$181,$198,$1B0,$1CA,$1E5,$202,$220,$241,$263,$287
+  // Music Frequency * 2^(20-Block) / 49716 Hz
+  ADLIB_FREQ_TABLE: array[0..12] of Word = (
+    $159, $16B, $181, $198, $1B0, $1CA, $1E5, $202, $220, $241, $263, $287, $2B1
   );
 
   ADLIB_NOTESYM_TABLE: array[0..11] of String[2] = ( 
@@ -74,6 +76,7 @@ type
     Sustain: TBit4;
   end;
 
+  PAdlibRegA0B8 = ^TAdlibRegA0B8;
   TAdlibRegA0B8 = bitpacked record
     Freq: TBit10;
     Octave: TBit3;
@@ -103,8 +106,8 @@ type
     Unused: TBit6;
   end;
 
-  PAdlibInstrumentParams = ^TAdlibInstrumentParams;
-  TAdlibInstrumentParams = record
+  PAdlibInstrumentOperator = ^TAdlibInstrumentOperator;
+  TAdlibInstrumentOperator = record
     Effect: TAdlibReg2035;
     Volume: TAdlibReg4055;
     AttackDecay: TAdlibReg6075;
@@ -114,11 +117,14 @@ type
 
   PAdlibInstrument = ^TAdlibInstrument;
   TAdlibInstrument = record
-    Params: array[0..1] of TAdlibInstrumentParams; // 0 = modulator, 1 = carrier
+    Operators: array[0..3] of TAdlibInstrumentOperator; // 4 operators
     AlgFeedback: TAdlibRegC0C8;
     PitchShift: Byte;
     Name: String[20];
   end;
+
+var
+  FreqRegs: array[0..8] of TAdlibRegA0B8;
 
 function Check: Boolean;
 procedure Init;
@@ -154,11 +160,11 @@ end;
 procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);
 var
   I: Byte;
-  Params: PAdlibInstrumentParams;
+  Params: PAdlibInstrumentOperator;
 begin
   for I := 0 to 1 do
   begin
-    Params := @Inst^.Params[I];
+    Params := @Inst^.Operators[I];
     WriteReg(ADLIB_SLOTS[Channel, I] + $20, Byte(Params^.Effect));
     WriteReg(ADLIB_SLOTS[Channel, I] + $40, Byte(Params^.Volume));
     WriteReg(ADLIB_SLOTS[Channel, I] + $60, Byte(Params^.AttackDecay));
@@ -209,14 +215,15 @@ end;
 
 procedure NoteOn(const Channel, Note, Octave: Byte);
 var
-  N: TAdlibRegA0B8;
+  N: PAdlibRegA0B8;
 begin
-  N.Freq := ADLIB_FREQ_TABLE[Note];
-  N.Octave := Octave;
-  N.KeyOn := 1;
+  N := @FreqRegs[Channel];
+  N^.Freq := ADLIB_FREQ_TABLE[Note];
+  N^.Octave := Octave;
+  N^.KeyOn := 1;
   WriteReg($B0 + Channel, 0);
-  WriteReg($A0 + Channel, Lo(Word(N)));
-  WriteReg($B0 + Channel, Hi(Word(N)));
+  WriteReg($A0 + Channel, Lo(Word(N^)));
+  WriteReg($B0 + Channel, Hi(Word(N^)));
 end;
 
 procedure NoteOff(const Channel: Byte);

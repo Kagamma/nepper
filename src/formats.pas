@@ -40,7 +40,7 @@ var
   NepperRec: TNepperRec;
 
 procedure SaveInstrument(const FileName: String; const Inst: PAdlibInstrument);
-procedure LoadInstrument(const FileName: String; const Inst: PAdlibInstrument);
+function LoadInstrument(const FileName: String; const Inst: PAdlibInstrument): Boolean;
 
 implementation
 
@@ -48,17 +48,22 @@ procedure SaveInstrument(const FileName: String; const Inst: PAdlibInstrument);
 var
   F: File of TAdlibInstrument;
 begin
-  Assign(F, FIleName);
+  if FileName = '' then
+    Exit;
+  Assign(F, FileName);
   Rewrite(F);
   Write(F, Inst^);
   Close(F);
 end;
 
-procedure LoadInstrument(const FileName: String; const Inst: PAdlibInstrument);
+function LoadInstrument(const FileName: String; const Inst: PAdlibInstrument): Boolean;
 var
   F: File of TAdlibInstrument;
 begin
-  Assign(F, FIleName);
+  Result := False;
+  if FileName = '' then
+    Exit;
+  Assign(F, FileName);
   {$I-}
   System.Reset(F);
   {$I+}
@@ -66,6 +71,7 @@ begin
   begin
     Read(F, Inst^);
     Close(F);
+    Result := True;
   end;
 end;
 
