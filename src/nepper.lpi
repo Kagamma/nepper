@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="12"/>
+    <PathDelim Value="\"/>
+    <General>
+      <Flags>
+        <MainUnitHasCreateFormStatements Value="False"/>
+        <MainUnitHasTitleStatement Value="False"/>
+        <MainUnitHasScaledStatement Value="False"/>
+      </Flags>
+      <SessionStorage Value="InProjectDir"/>
+      <Title Value="nepper"/>
+      <UseAppBundle Value="False"/>
+      <ResourceType Value="res"/>
+    </General>
+    <BuildModes>
+      <Item Name="Default" Default="True"/>
+    </BuildModes>
+    <PublishOptions>
+      <Version Value="2"/>
+      <UseFileFilters Value="True"/>
+    </PublishOptions>
+    <RunParams>
+      <FormatVersion Value="2"/>
+    </RunParams>
+    <Units>
+      <Unit>
+        <Filename Value="nepper.lpr"/>
+        <IsPartOfProject Value="True"/>
+      </Unit>
+      <Unit>
+        <Filename Value="adlib.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Adlib"/>
+      </Unit>
+      <Unit>
+        <Filename Value="keyboard.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Keyboard"/>
+      </Unit>
+      <Unit>
+        <Filename Value="input.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Input"/>
+      </Unit>
+      <Unit>
+        <Filename Value="screen.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Screen"/>
+      </Unit>
+      <Unit>
+        <Filename Value="utils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Utils"/>
+      </Unit>
+      <Unit>
+        <Filename Value="edinstr.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="EdInstr"/>
+      </Unit>
+      <Unit>
+        <Filename Value="formats.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Formats"/>
+      </Unit>
+    </Units>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="11"/>
+    <PathDelim Value="\"/>
+    <Target>
+      <Filename Value="../bin/NEPPER.EXE"/>
+    </Target>
+    <SearchPaths>
+      <IncludeFiles Value="$(ProjOutDir)"/>
+      <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
+    </SearchPaths>
+    <Parsing>
+      <SyntaxOptions>
+        <UseAnsiStrings Value="False"/>
+      </SyntaxOptions>
+    </Parsing>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+      <TargetProcessor Value="8086"/>
+      <TargetCPU Value="i8086"/>
+      <TargetOS Value="msdos"/>
+      <Optimizations>
+        <OptimizationLevel Value="3"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="False"/>
+        <RunWithoutDebug Value="True"/>
+      </Debugging>
+      <LinkSmart Value="True"/>
+    </Linking>
+  </CompilerOptions>
+  <Debugging>
+    <Exceptions>
+      <Item>
+        <Name Value="EAbort"/>
+      </Item>
+      <Item>
+        <Name Value="ECodetoolError"/>
+      </Item>
+      <Item>
+        <Name Value="EFOpenError"/>
+      </Item>
+    </Exceptions>
+  </Debugging>
+</CONFIG>

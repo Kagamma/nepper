@@ -1,0 +1,14 @@
+*.dbg
+*.bak
+*.exe
+*.csv
+*.dll
+*.so
+*.lps
+*.tmp
+*.zip
+link*.res
+lib
+ppas.sh
+*.ins
+*.bat
