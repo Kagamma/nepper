@@ -4,15 +4,18 @@ unit Dialogs;
 
 interface
 
-function ShowInputDialog(const Title: String; var Output: String): Boolean;
-procedure ShowMessageDialog(const Title, Text: String);
+uses
+  Utils;
+
+function ShowInputDialog(const Title: String40; var Output: String40): Boolean;
+procedure ShowMessageDialog(const Title, Text: String40);
 
 implementation
 
 uses
   Screen, Keyboard, Input;
 
-function ShowInputDialog(const Title: String; var Output: String): Boolean;
+function ShowInputDialog(const Title: String40; var Output: String40): Boolean;
 var
   OldInputCursor: Byte;
 begin
@@ -21,12 +24,12 @@ begin
   InputCursor := 1;
   Screen.WriteText(20, 10, $3E, '', 40);
   Screen.WriteTextMid(40, 10, $3E, Title);
-  Screen.WriteText(20, 11, $3F, '', 40);
+  Screen.WriteText(20, 11, $1F, '', 40);
   Screen.SetCursorPosition(20, 11);
   repeat
     Keyboard.WaitForInput;
-    Input.InputText(Output, 39);
-    Screen.WriteText(20, 11, $3F, Output, 39);
+    Input.InputText(Output, 40);
+    Screen.WriteText(20, 11, $1F, Output, 40);
     case KBInput.ScanCode of
       SCAN_ESC:
         begin
@@ -45,7 +48,7 @@ begin
   KBInput.ScanCode := $FF;
 end;
 
-procedure ShowMessageDialog(const Title, Text: String);
+procedure ShowMessageDialog(const Title, Text: String40);
 begin
   Screen.WriteText(20, 10, $3E, '', 40);
   Screen.WriteText(20, 11, $30, '', 40);

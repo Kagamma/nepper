@@ -4,6 +4,9 @@ unit Screen;
 
 interface
 
+uses
+  Utils;
+
 var
   ScreenPointer: PWord;
 
@@ -11,9 +14,9 @@ procedure ClrScr;
 procedure SetCursorPosition(const X, Y: Byte);
 procedure IncCursorX;
 procedure DecCursorX;
-procedure WriteText(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
-procedure WriteTextBack(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
-procedure WriteTextMid(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
+procedure WriteText(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
+procedure WriteTextBack(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
+procedure WriteTextMid(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
 
 implementation
 
@@ -49,7 +52,7 @@ begin
   SetCursorPosition(CursorX, CursorY);
 end;
 
-procedure WriteText(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
+procedure WriteText(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
 var
   I: Byte;
   P: PWord;
@@ -69,7 +72,7 @@ begin
   end;
 end;
 
-procedure WriteTextBack(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
+procedure WriteTextBack(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
 var
   I: Byte;
   P: PWord;
@@ -85,12 +88,11 @@ begin
       P^ := W + Byte(S[I])
     else
       P^ := W;
-    Dec(P);                              
-  ScreenPointer := Ptr($B800, $0000);
+    Dec(P);
   end;
 end;
 
-procedure WriteTextMid(const X, Y, Attr: Byte; const S: String; MaxLen: Byte = 0);
+procedure WriteTextMid(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
 var
   I: Byte;
   P: PWord;
@@ -115,7 +117,7 @@ initialization
   FillChar(ScreenPointer[0], 80*25*2, 0);
 
 finalization
-  FillChar(ScreenPointer[0], 80*25*2, 0);
+  FillWord(ScreenPointer[0], 80*25, $0700);
   SetCursorPosition(0, 0);
 
 end.

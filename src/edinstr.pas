@@ -83,7 +83,7 @@ procedure RenderInstrInfo;
 var
   I: Byte;
   Ofs: Byte;
-  S: String;
+  S: String20;
 begin
   WriteText(OP1_X + 1, 3, $0F, HexStr(CurInstrPos, 2));
   WriteText(OP1_X + 1, 4, $0F, HexStr(CurInstr^.AlgFeedback.Alg, 2));
@@ -114,7 +114,7 @@ end;
 procedure Loop;
 var
   OldCurMenuPos: Byte;
-  S: String;
+  S: String40;
   V: Byte;
 begin
   ClrScr;
@@ -342,7 +342,7 @@ begin
           end;
         SCAN_DOWN:
           begin
-            if CurMenuPos < 26 then
+            if CurMenuPos < 28 then
               Inc(CurMenuPos);
             if CurMenuPos = 14 then
               Input.InputCursor := 1;

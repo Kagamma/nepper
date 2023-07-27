@@ -4,6 +4,12 @@ unit Utils;
 
 interface
 
+type
+  String2 = String[2];
+  String20 = String[20];
+  String40 = String[40];
+  String80 = String[80];
+
 function HexToInt(const S: String): Word;
 function ByteToYesNo(const B: Byte): String;
 

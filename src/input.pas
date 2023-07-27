@@ -102,12 +102,15 @@ procedure InputHex2(var S: String; var Value: Byte; const MaxValue: Byte);
 begin
   S := HexStr(Value, 2);
   InputText(S, 2, True);
-  S := UpCase(S);
-  Value := HexToInt(S);
-  if Value > MaxValue then
+  if KBInput.ScanCode = $FF then
   begin
-    S := HexStr(MaxValue, 2);
-    Value := MaxValue;
+    S := UpCase(S);
+    Value := HexToInt(S);
+    if Value > MaxValue then
+    begin
+      S := HexStr(MaxValue, 2);
+      Value := MaxValue;
+    end;
   end;
 end;
 

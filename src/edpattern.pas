@@ -5,7 +5,7 @@ unit EdPattern;
 interface
 
 uses
-  Adlib;
+  Adlib, Utils;
 
 var
   IsPatternEdit: Boolean = False;
@@ -16,7 +16,7 @@ procedure Loop;
 implementation
 
 uses
-  Input, Keyboard, Screen;
+  Input, Keyboard, Screen, Formats;
 
 procedure RenderCommonTexts;
 begin

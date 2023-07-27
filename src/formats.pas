@@ -27,13 +27,15 @@ type
 
   TNepperChannel = array[0..$3F] of TNepperChannelCell;
 
+  PNepperPattern = ^TNepperPattern;
   TNepperPattern = array[0..7] of TNepperChannel;
 
   TNepperRec = record
-    Name: String[20];
+    Name: String[40];
     ChannelCount: Byte;
     Instruments: array[0..31] of TAdlibInstrument;
-    Patterns: array[0..$F] of TNepperPattern;
+    PatternIndices: array[0..$F] of Byte;
+    Patterns: array[0..$3F] of PNepperPattern;
   end;
 
 var
@@ -74,6 +76,18 @@ begin
     Result := True;
   end;
 end;
+
+var
+  I: Byte;
+
+initialization
+  FillChar(NepperRec.Name[1], SizeOf(NepperRec), 0);
+  for I := 0 to High(NepperRec.Patterns) do
+    New(NepperRec.Patterns[I]);
+
+finalization
+  for I := 0 to High(NepperRec.Patterns) do
+    Dispose(NepperRec.Patterns[I]);
 
 end.
 
