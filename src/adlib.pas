@@ -24,11 +24,11 @@ const
   );
 
   // Music Frequency * 2^(20-Block) / 49716 Hz
-  ADLIB_FREQ_TABLE: array[0..12] of Word = (
+  ADLIB_FREQ_TABLE: array[1..13] of Word = (
     $159, $16B, $181, $198, $1B0, $1CA, $1E5, $202, $220, $241, $263, $287, $2B1
   );
 
-  ADLIB_NOTESYM_TABLE: array[0..11] of String[2] = ( 
+  ADLIB_NOTESYM_TABLE: array[1..12] of String[2] = (
     'C-',
     'C#',
     'D-',
@@ -185,7 +185,6 @@ begin
   S1 := Port[ADLIB_PORT_STATUS];
   WriteReg($02, $FF);                   
   WriteReg($04, $21); // Start timer 1
-  //Delay(10);
   S2 := Port[ADLIB_PORT_STATUS];
   WriteReg($04, $60);
   WriteReg($04, $80);

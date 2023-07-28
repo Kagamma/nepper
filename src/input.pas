@@ -8,7 +8,8 @@ var
   InputCursor: Byte = 1;
 
 procedure InputText(var S: String; const MaxLen: Byte; const IsHex: Boolean = False);
-procedure InputHex2(var S: String; var Value: Byte; const MaxValue: Byte); 
+procedure InputHex2(var S: String; var Value: Byte; const MaxValue: Byte);
+procedure InputHex3(var S: String; var Value: Word; const MaxValue: Word);
 procedure InputYesNo(var S: String; var Value: Byte);
 
 implementation
@@ -42,7 +43,6 @@ begin
       end;
     SCAN_DEL:
       begin
-        KBInput.ScanCode := $FE;
         if IsHex then
           Exit;
         if InputCursor <= MaxLen then
@@ -53,7 +53,6 @@ begin
       end;
     SCAN_BS:
       begin
-        KBInput.ScanCode := $FE;
         if IsHex then
           Exit;
         if InputCursor > 1 then
@@ -109,6 +108,22 @@ begin
     if Value > MaxValue then
     begin
       S := HexStr(MaxValue, 2);
+      Value := MaxValue;
+    end;
+  end;
+end;
+
+procedure InputHex3(var S: String; var Value: Word; const MaxValue: Word);
+begin
+  S := HexStr(Value, 3);
+  InputText(S, 3, True);
+  if KBInput.ScanCode = $FF then
+  begin
+    S := UpCase(S);
+    Value := HexToInt(S);
+    if Value > MaxValue then
+    begin
+      S := HexStr(MaxValue, 3);
       Value := MaxValue;
     end;
   end;

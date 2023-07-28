@@ -8,7 +8,10 @@ uses
   Utils;
 
 var
-  ScreenPointer: PWord;
+  ScreenPointer,
+  ScreenPointerBackup: PWord;
+  CursorX,
+  CursorY: Byte;
 
 procedure ClrScr;
 procedure SetCursorPosition(const X, Y: Byte);
@@ -19,10 +22,6 @@ procedure WriteTextBack(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte 
 procedure WriteTextMid(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
 
 implementation
-
-var
-  CursorX,
-  CursorY: Byte;
 
 procedure ClrScr;
 begin
@@ -114,6 +113,7 @@ end;
 
 initialization
   ScreenPointer := Ptr($B800, $0000);
+  ScreenPointerBackup := ScreenPointer;
   FillChar(ScreenPointer[0], 80*25*2, 0);
 
 finalization

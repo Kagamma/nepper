@@ -34,6 +34,12 @@ var
   TestNote: TNepperNote;
   MenuList: array[0..28] of TEdInstrMenuItem;
 
+procedure ResetParams;
+begin                           
+  Input.InputCursor := 1;
+  Screen.SetCursorPosition(MenuList[CurMenuPos].X, MenuList[CurMenuPos].Y);
+end;
+
 procedure RenderTexts;
 begin
   WriteText(0, 0, $1F, '                                   - Nepper -', 80);
@@ -118,10 +124,9 @@ var
   V: Byte;
 begin
   ClrScr;
+  ResetParams;
   RenderTexts;
   RenderInstrInfo;
-  CurMenuPos := 1;
-  Screen.SetCursorPosition(MenuList[1].X, MenuList[1].Y);
   repeat
     Keyboard.WaitForInput;
     OldCurMenuPos := CurMenuPos;
@@ -365,13 +370,13 @@ begin
                 begin
                   if TestNote.Octave <= ADLIB_MAX_OCTAVE - 1 then
                   begin
-                    if TestNote.Note < 11 then
+                    if TestNote.Note < 12 then
                     begin
-                      Inc(TestNote.Note);
+                      TestNote.Note := TestNote.Note + 1;
                     end else
                     if TestNote.Octave < ADLIB_MAX_OCTAVE - 1 then
                     begin
-                      Inc(TestNote.Octave);
+                      TestNote.Octave := TestNote.Octave + 1;
                       TestNote.Note := 0;
                     end;
                   end;
@@ -383,13 +388,13 @@ begin
                 begin
                   if TestNote.Octave >= 0 then
                   begin
-                    if TestNote.Note > 0 then
+                    if TestNote.Note > 1 then
                     begin
-                      Dec(TestNote.Note);
+                      TestNote.Note := TestNote.Note - 1;
                     end else
                     if TestNote.Octave > 0 then
                     begin
-                      Dec(TestNote.Octave);
+                      TestNote.Octave := TestNote.Octave - 1;
                       TestNote.Note := 11;
                     end;
                   end;
@@ -470,7 +475,7 @@ var
 initialization
   CurInstr := @NepperRec.Instruments[0];
   TestNote.Octave := 4;
-  TestNote.Note := 0;
+  TestNote.Note := 1;
   // Fill up menu
   FillChar(MenuList[0], SizeOf(MenuList), $FF);
   // X

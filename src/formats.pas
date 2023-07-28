@@ -8,12 +8,12 @@ uses
   Adlib;
 
 type
-  TNepperNote = record
+  TNepperNote = bitpacked record
     Note: TBit4;
     Octave: TBit4;
   end;
 
-  TNepperEffect = record
+  TNepperEffect = bitpacked record
     V2: TBit4;
     V1: TBit4;
     Effect: TBit4;
@@ -25,6 +25,7 @@ type
     Effect: TNepperEffect;
   end;
 
+  PNepperChannel = ^TNepperChannel;
   TNepperChannel = array[0..$3F] of TNepperChannelCell;
 
   PNepperPattern = ^TNepperPattern;
@@ -32,9 +33,9 @@ type
 
   TNepperRec = record
     Name: String[40];
-    ChannelCount: Byte;
+    ChannelCount: ShortInt;
     Instruments: array[0..31] of TAdlibInstrument;
-    PatternIndices: array[0..$F] of Byte;
+    PatternIndices: array[0..$FF] of Byte;
     Patterns: array[0..$3F] of PNepperPattern;
   end;
 
@@ -83,7 +84,10 @@ var
 initialization
   FillChar(NepperRec.Name[1], SizeOf(NepperRec), 0);
   for I := 0 to High(NepperRec.Patterns) do
+  begin
     New(NepperRec.Patterns[I]);
+  end;
+  NepperRec.ChannelCount := 4;
 
 finalization
   for I := 0 to High(NepperRec.Patterns) do

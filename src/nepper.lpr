@@ -15,12 +15,12 @@ begin
   Adlib.Init;
 
   KBInput.ScanCode := SCAN_F1;
+  IsPatternEdit := False;
   repeat
     case KBInput.ScanCode of  
       SCAN_F1:
         begin
           ClrScr;
-          IsPatternEdit := False;
           RenderCommonTexts;
           repeat
             case IsPatternEdit of
