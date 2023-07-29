@@ -17,6 +17,9 @@ procedure ClrScr;
 procedure SetCursorPosition(const X, Y: Byte);
 procedure IncCursorX;
 procedure DecCursorX;
+procedure WriteTextFast1(const P: PWord; const Attr: Byte; const S: Char); inline;
+procedure WriteTextFast2(P: PWord; const Attr: Byte; const S: String2); inline;
+procedure WriteTextFast3(P: PWord; const Attr: Byte; const S: String3); inline;
 procedure WriteText(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
 procedure WriteTextBack(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
 procedure WriteTextMid(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
@@ -49,6 +52,30 @@ procedure DecCursorX;
 begin
   Dec(CursorX);
   SetCursorPosition(CursorX, CursorY);
+end;
+
+procedure WriteTextFast1(const P: PWord; const Attr: Byte; const S: Char); inline;
+begin
+  P^ := (Word(Attr) shl 8) + Byte(S);
+end;
+
+procedure WriteTextFast2(P: PWord; const Attr: Byte; const S: String2); inline;
+var
+  W: Word;
+begin
+  W := Attr shl 8;
+  P[0] := W + Byte(S[1]);
+  P[1] := W + Byte(S[2]);
+end;
+
+procedure WriteTextFast3(P: PWord; const Attr: Byte; const S: String3); inline;
+var
+  W: Word;
+begin
+  W := Attr shl 8;
+  P[0] := W + Byte(S[1]);
+  P[1] := W + Byte(S[2]);
+  P[2] := W + Byte(S[3]);
 end;
 
 procedure WriteText(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);

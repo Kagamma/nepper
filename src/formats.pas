@@ -7,6 +7,10 @@ interface
 uses
   Adlib;
 
+const
+  SONG_HALT = $FF;
+  SONG_REPEAT = $FE;
+
 type
   TNepperNote = bitpacked record
     Note: TBit4;
@@ -20,30 +24,41 @@ type
     Unused: TBit4;
   end;
 
-  TNepperChannelCell = record
+  PNepperChannelCell = ^TNepperChannelCell;
+  TNepperChannelCell = packed record
     Note  : TNepperNote;
     Effect: TNepperEffect;
   end;
 
+  PNepperChannelCells = ^TNepperChannelCells;
+  TNepperChannelCells = array[0..$3F] of TNepperChannelCell;
+
   PNepperChannel = ^TNepperChannel;
-  TNepperChannel = array[0..$3F] of TNepperChannelCell;
+  TNepperChannel = packed record
+    InstrumentIndex: Byte;
+    Cells: TNepperChannelCells;
+  end;
 
   PNepperPattern = ^TNepperPattern;
   TNepperPattern = array[0..7] of TNepperChannel;
 
-  TNepperRec = record
+  TNepperRec = packed record
+    Magic: DWord;
     Name: String[40];
+    IsOPL3: Boolean;
     ChannelCount: ShortInt;
     Instruments: array[0..31] of TAdlibInstrument;
     PatternIndices: array[0..$FF] of Byte;
-    Patterns: array[0..$3F] of PNepperPattern;
   end;
 
 var
   NepperRec: TNepperRec;
+  Patterns: array[0..$3F] of PNepperPattern;
 
 procedure SaveInstrument(const FileName: String; const Inst: PAdlibInstrument);
 function LoadInstrument(const FileName: String; const Inst: PAdlibInstrument): Boolean;
+procedure SaveSong(const FileName: String);
+function LoadSong(const FileName: String): Boolean;
 
 implementation
 
@@ -78,20 +93,31 @@ begin
   end;
 end;
 
+procedure SaveSong(const FileName: String);
+begin
+
+end;
+
+function LoadSong(const FileName: String): Boolean;
+begin
+  Result := False;
+end;
+
 var
   I: Byte;
 
 initialization
-  FillChar(NepperRec.Name[1], SizeOf(NepperRec), 0);
-  for I := 0 to High(NepperRec.Patterns) do
+  FillChar(NepperRec.Magic, SizeOf(NepperRec), 0);
+  for I := 0 to High(Formats.Patterns) do
   begin
-    New(NepperRec.Patterns[I]);
+    New(Formats.Patterns[I]);
+    FillChar(Formats.Patterns[I]^[0], SizeOf(TNepperPattern), 0);
   end;
-  NepperRec.ChannelCount := 4;
+  NepperRec.ChannelCount := 8;
 
 finalization
-  for I := 0 to High(NepperRec.Patterns) do
-    Dispose(NepperRec.Patterns[I]);
+  for I := 0 to High(Formats.Patterns) do
+    Dispose(Formats.Patterns[I]);
 
 end.
 

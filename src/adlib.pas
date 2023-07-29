@@ -107,7 +107,7 @@ type
   end;
 
   PAdlibInstrumentOperator = ^TAdlibInstrumentOperator;
-  TAdlibInstrumentOperator = record
+  TAdlibInstrumentOperator = packed record
     Effect: TAdlibReg2035;
     Volume: TAdlibReg4055;
     AttackDecay: TAdlibReg6075;
@@ -116,7 +116,7 @@ type
   end;
 
   PAdlibInstrument = ^TAdlibInstrument;
-  TAdlibInstrument = record
+  TAdlibInstrument = packed record
     Operators: array[0..3] of TAdlibInstrumentOperator; // 4 operators
     AlgFeedback: TAdlibRegC0C8;
     PitchShift: Byte;
@@ -132,6 +132,7 @@ procedure Reset;
 procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);
 procedure NoteOn(const Channel, Note, Octave: Byte);
 procedure NoteOff(const Channel: Byte);
+procedure NoteClear(const Channel: Byte);
 procedure WriteReg(const Reg, Value: Byte);
 
 implementation
@@ -216,17 +217,27 @@ procedure NoteOn(const Channel, Note, Octave: Byte);
 var
   N: PAdlibRegA0B8;
 begin
-  N := @FreqRegs[Channel];
+  N := @FreqRegs[Channel];  
+  N^.KeyOn := 0;    
+  WriteReg($B0 + Channel, Hi(Word(N^)));
   N^.Freq := ADLIB_FREQ_TABLE[Note];
   N^.Octave := Octave;
   N^.KeyOn := 1;
-  WriteReg($B0 + Channel, 0);
   WriteReg($A0 + Channel, Lo(Word(N^)));
   WriteReg($B0 + Channel, Hi(Word(N^)));
 end;
 
 procedure NoteOff(const Channel: Byte);
-begin                    
+var
+  N: PAdlibRegA0B8;
+begin
+  N := @FreqRegs[Channel];
+  N^.KeyOn := 0;
+  WriteReg($B0 + Channel, Hi(Word(N^)));
+end;
+
+procedure NoteClear(const Channel: Byte);
+begin                           
   WriteReg($A0 + Channel, 0);
   WriteReg($B0 + Channel, 0);
 end;

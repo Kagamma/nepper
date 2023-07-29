@@ -14,11 +14,11 @@ begin
   end;
   Adlib.Init;
 
-  KBInput.ScanCode := SCAN_F1;
+  KBInput.ScanCode := SCAN_F2;
   IsPatternEdit := False;
   repeat
     case KBInput.ScanCode of  
-      SCAN_F1:
+      SCAN_F2:
         begin
           ClrScr;
           RenderCommonTexts;
@@ -33,9 +33,9 @@ begin
               SCAN_TAB:
                 IsPatternEdit := not IsPatternEdit;
             end;
-          until(KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F2);
+          until(KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F3);
         end;
-      SCAN_F2:
+      SCAN_F3:
         EdInstr.Loop;
     end;
   until KBInput.ScanCode = SCAN_ESC;

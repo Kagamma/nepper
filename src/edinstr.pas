@@ -44,7 +44,7 @@ procedure RenderTexts;
 begin
   WriteText(0, 0, $1F, '                                   - Nepper -', 80);
   WriteText(0, 0, $1A, 'INSTRUMENT EDIT');
-  WriteText(0, 1, $0E, '     [F1] Song/Pattern Editor  [F2] Instrument Editor  [ESC] Exit Nepper');
+  WriteText(0, 1, $0E, '     [F2] Song/Pattern Editor  [F3] Instrument Editor  [ESC] Exit Nepper');
 
   WriteTextBack(OP1_X, 3, $0D, 'Inst. number:');
   WriteTextBack(OP1_X, 4, $0D, 'Synthesis mode:');
@@ -91,22 +91,22 @@ var
   Ofs: Byte;
   S: String20;
 begin
-  WriteText(OP1_X + 1, 3, $0F, HexStr(CurInstrPos, 2));
-  WriteText(OP1_X + 1, 4, $0F, HexStr(CurInstr^.AlgFeedback.Alg, 2));
+  WriteText(OP1_X + 1, 3, $0F, HexStrFast2(CurInstrPos));
+  WriteText(OP1_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Alg));
   WriteText(OP2_X + 1, 3, $0F, CurInstr^.Name, 20);
-  WriteText(OP2_X + 1, 4, $0F, HexStr(CurInstr^.AlgFeedback.Feedback, 2));
-  WriteText(OP3_X + 1, 4, $0F, HexStr(CurInstr^.PitchShift, 2));
+  WriteText(OP2_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Feedback));
+  WriteText(OP3_X + 1, 4, $0F, HexStrFast2(CurInstr^.PitchShift));
   for I := 0 to 1 do
   begin
     Ofs := I * ((OP2_X + 2) - (OP1_X + 2));
-    WriteText((OP1_X + 1) + Ofs, 7, $0F, HexStr(CurInstr^.Operators[I].AttackDecay.Attack, 2));
-    WriteText((OP1_X + 1) + Ofs, 8, $0F, HexStr(CurInstr^.Operators[I].AttackDecay.Decay, 2));
-    WriteText((OP1_X + 1) + Ofs, 9, $0F, HexStr($F - CurInstr^.Operators[I].SustainRelease.Sustain, 2));
-    WriteText((OP1_X + 1) + Ofs, 10, $0F, HexStr(CurInstr^.Operators[I].SustainRelease.Release, 2));
-    WriteText((OP1_X + 1) + Ofs, 11, $0F, HexStr($3F - CurInstr^.Operators[I].Volume.Total, 2));
-    WriteText((OP1_X + 1) + Ofs, 12, $0F, HexStr(CurInstr^.Operators[I].Volume.Scaling, 2));
-    WriteText((OP1_X + 1) + Ofs, 13, $0F, HexStr(CurInstr^.Operators[I].Effect.ModFreqMult, 2));;
-    WriteText((OP1_X + 1) + Ofs, 14, $0F, HexStr(CurInstr^.Operators[I].Waveform.Waveform, 2));
+    WriteText((OP1_X + 1) + Ofs, 7, $0F, HexStrFast2(CurInstr^.Operators[I].AttackDecay.Attack));
+    WriteText((OP1_X + 1) + Ofs, 8, $0F, HexStrFast2(CurInstr^.Operators[I].AttackDecay.Decay));
+    WriteText((OP1_X + 1) + Ofs, 9, $0F, HexStrFast2($F - CurInstr^.Operators[I].SustainRelease.Sustain));
+    WriteText((OP1_X + 1) + Ofs, 10, $0F, HexStrFast2(CurInstr^.Operators[I].SustainRelease.Release));
+    WriteText((OP1_X + 1) + Ofs, 11, $0F, HexStrFast2($3F - CurInstr^.Operators[I].Volume.Total));
+    WriteText((OP1_X + 1) + Ofs, 12, $0F, HexStrFast2(CurInstr^.Operators[I].Volume.Scaling));
+    WriteText((OP1_X + 1) + Ofs, 13, $0F, HexStrFast2(CurInstr^.Operators[I].Effect.ModFreqMult));;
+    WriteText((OP1_X + 1) + Ofs, 14, $0F, HexStrFast2(CurInstr^.Operators[I].Waveform.Waveform));
     WriteText((OP1_X + 1) + Ofs, 15, $0F, ByteToYesNo(CurInstr^.Operators[I].Effect.EGTyp), 3); 
     WriteText((OP1_X + 1) + Ofs, 16, $0F, ByteToYesNo(CurInstr^.Operators[I].Effect.KSR), 3);
     WriteText((OP1_X + 1) + Ofs, 17, $0F, ByteToYesNo(CurInstr^.Operators[I].Effect.Vib), 3);
@@ -355,12 +355,13 @@ begin
         SCAN_SPACE:
           begin
             Adlib.SetInstrument(8, CurInstr);
+            AdLib.NoteClear(8);
             Adlib.NoteOn(8, TestNote.Note, TestNote.Octave);
             IsInstrTesting := True;
           end;
         SCAN_ENTER:
           begin
-            Adlib.NoteOff(8);
+            Adlib.NoteClear(8);
             IsInstrTesting := False;
           end;
         else
@@ -466,7 +467,8 @@ begin
         Input.InputCursor := 2;
       Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
     end;
-  until (KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F1);
+  until (KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F2);
+  Adlib.NoteOff(8);
 end;
 
 var

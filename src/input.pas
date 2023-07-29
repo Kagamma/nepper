@@ -99,7 +99,7 @@ end;
 
 procedure InputHex2(var S: String; var Value: Byte; const MaxValue: Byte);
 begin
-  S := HexStr(Value, 2);
+  HexStrFast2(Value, S);
   InputText(S, 2, True);
   if KBInput.ScanCode = $FF then
   begin
@@ -107,7 +107,7 @@ begin
     Value := HexToInt(S);
     if Value > MaxValue then
     begin
-      S := HexStr(MaxValue, 2);
+      HexStrFast2(MaxValue, S);
       Value := MaxValue;
     end;
   end;
@@ -115,7 +115,7 @@ end;
 
 procedure InputHex3(var S: String; var Value: Word; const MaxValue: Word);
 begin
-  S := HexStr(Value, 3);
+  HexStrFast3(Value, S);
   InputText(S, 3, True);
   if KBInput.ScanCode = $FF then
   begin
@@ -123,7 +123,7 @@ begin
     Value := HexToInt(S);
     if Value > MaxValue then
     begin
-      S := HexStr(MaxValue, 3);
+      HexStrFast3(MaxValue, S);
       Value := MaxValue;
     end;
   end;

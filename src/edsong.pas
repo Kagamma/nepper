@@ -16,7 +16,7 @@ procedure RenderSongInfo;
 implementation
 
 uses
-  Input, Keyboard, Screen, Formats, EdPattern;
+  Input, Keyboard, Screen, Formats, EdPattern, Player, Dialogs;
 
 var
   IsEditSongName: Boolean = False;
@@ -45,7 +45,7 @@ begin
   for I := 0 to $F do
   begin
     P := PatternAnchor + I;
-    S := HexStr(P, 2);
+    HexStrFast2(P, S);
     WriteText(10 + 3 * I, 6, $0F, S, 2);
     case NepperRec.PatternIndices[P] of
       $FE:
@@ -70,7 +70,7 @@ end;
 procedure LoopEditSongName;
 begin
   Input.InputText(NepperRec.Name, 40);
-  WriteText(10, 5, $0F, NepperRec.Name);
+  WriteText(10, 5, $0F, NepperRec.Name, 40);
   case KBInput.ScanCode of
     SCAN_DOWN:
       begin
@@ -149,12 +149,14 @@ procedure LoopEditSheet;
 
 var
   S: String20;
+  OldCursorX,
+  OldCursorY: Byte;
 begin
   Input.InputHex2(S, NepperRec.PatternIndices[PatternIndex], $1F);
   case NepperRec.PatternIndices[PatternIndex] of
-    $FE:
+    SONG_REPEAT:
       WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'R', 2);
-    $FF:
+    SONG_HALT:
       WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'H', 2);
     else
       WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, S);
@@ -191,16 +193,23 @@ begin
         begin
           Delete;
         end;
+      SCAN_SPACE:
+        begin
+          if not IsPlaying then
+            Player.Start($FF)
+          else
+            Player.Stop;
+        end
       else
         case KBInput.CharCode of
           'h':
             begin
-              NepperRec.PatternIndices[PatternIndex] := $FF;
+              NepperRec.PatternIndices[PatternIndex] := SONG_HALT;
               WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'H', 2);
             end;
           'r':
             begin
-              NepperRec.PatternIndices[PatternIndex] := $FE;
+              NepperRec.PatternIndices[PatternIndex] := SONG_REPEAT;
               WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'R', 2);
             end;
           '<':
@@ -221,6 +230,31 @@ begin
                 EdPattern.RenderPatternInfo;
               end;
             end;
+          's':
+            begin
+              S := '';
+              OldCursorX := CursorX;
+              OldCursorY := CursorY;
+              if ShowInputDialog('Save song', S) then
+              begin
+                SaveSong(S);
+                S := '';
+              end;
+              Screen.SetCursorPosition(OldCursorX, OldCursorY);
+            end;
+          'l':
+            begin
+              S := '';  
+              OldCursorX := CursorX;
+              OldCursorY := CursorY;
+              if ShowInputDialog('Load song', S) then
+              begin     
+                if not LoadSong(S) then
+                  ShowMessageDialog('Error', 'File not found!');
+                S := '';
+              end;
+              Screen.SetCursorPosition(OldCursorX, OldCursorY);
+            end;
         end;
     end;
 end;
@@ -237,7 +271,7 @@ begin
       LoopEditSongName
     else
       LoopEditSheet;
-  until (KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F2) or (KBInput.ScanCode = SCAN_TAB);
+  until (KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F3) or (KBInput.ScanCode = SCAN_TAB);
 end;
 
 end.
