@@ -248,10 +248,10 @@ var
   procedure SetTone(const Note, Octave: Byte);
   begin
     if (Note <> 0) or (Octave <> 0) then
-    begin 
-      Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PC^.InstrumentIndex]);
-      AdLib.NoteClear(CurChannel);
-      Adlib.NoteOn(CurChannel, Note, Octave);
+    begin
+      Adlib.SetInstrument(8, @NepperRec.Instruments[PC^.InstrumentIndex]);
+      AdLib.NoteClear(8);
+      Adlib.NoteOn(8, Note, Octave);
     end;
     if IsEditMode then
     begin
@@ -600,7 +600,7 @@ begin
       end;        
     SCAN_DOWN:
       begin
-        if CurStep > 1 then
+        if CurStep > 0 then
         begin
           Dec(CurStep);
           RenderStep;

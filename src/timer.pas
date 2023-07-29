@@ -17,7 +17,7 @@ var
   Divisor: DWord;
 begin
   asm cli end;
-  Divisor := $427D div 5;
+  Divisor := 1193182 div 50;
   Port[$43] := $36;
   Port[$40] := Byte(Divisor);
   Port[$40] := Byte(Divisor shr 8);

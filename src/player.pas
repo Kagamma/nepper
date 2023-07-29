@@ -19,14 +19,14 @@ uses
 var
   I: Byte;
   CurPatternIndex: Byte = 0;
+  PInstrument: PAdlibInstrument;
   PPattern: PNepperPattern;
   PChannel: PNepperChannel;
   PCell: PNepperChannelCell;
   CurChannel: Byte;
   CurCell: Byte;
   CurTicks: Byte = 0;
-  CurSpeed: Byte = 40;
-  PNoteTestReg: PAdlibRegA0B8;
+  CurSpeed: Byte = 6; // 40 for fmc?
   IsPatternOnly: Boolean;
   Note: TNepperNote;
   Effect: TNepperEffect;
@@ -41,6 +41,7 @@ begin
   Stop;
   CurTicks := 0;
   CurCell := 0;
+  CurSpeed := 6;
   if PatternIndex <> $FF then
   begin        
     CurPatternIndex := PatternIndex;
@@ -68,24 +69,28 @@ begin
   Screen.WriteText(73, 0, C, 'PLAYING', 7);
 end;
 
+procedure ChangeFreq(var Reg: TAdlibRegA0B8; const Channel: Byte; const Freq: ShortInt); inline;
+begin
+  Reg.Freq := Reg.Freq + Freq;
+  if Reg.Freq >= ADLIB_FREQ_TABLE[13] then
+  begin
+    Reg.Freq := ADLIB_FREQ_TABLE[1];
+    Reg.Octave := Reg.Octave + 1;
+  end else
+  if Reg.Freq <= ADLIB_FREQ_TABLE[1] then
+  begin
+    Reg.Freq := ADLIB_FREQ_TABLE[13];
+    Reg.Octave := Reg.Octave - 1;
+  end;
+  WriteReg($A0 + Channel, Lo(Word(Reg)));
+  WriteReg($B0 + Channel, Hi(Word(Reg)));
+end;
+
 procedure PlayTestNote; inline;
 begin
   if CurInstr^.PitchShift <> 0 then
   begin
-    PNoteTestReg := @FreqRegs[8];
-    PNoteTestReg^.Freq := PNoteTestReg^.Freq + ShortInt(CurInstr^.PitchShift);
-    if PNoteTestReg^.Freq >= ADLIB_FREQ_TABLE[13] then
-    begin
-      PNoteTestReg^.Freq := ADLIB_FREQ_TABLE[1];
-      PNoteTestReg^.Octave := PNoteTestReg^.Octave + 1;
-    end else
-    if PNoteTestReg^.Freq <= ADLIB_FREQ_TABLE[1] then
-    begin
-      PNoteTestReg^.Freq := ADLIB_FREQ_TABLE[13];
-      PNoteTestReg^.Octave := PNoteTestReg^.Octave - 1;
-    end;
-    WriteReg($A0 + 8, Lo(Word(PNoteTestReg^)));
-    WriteReg($B0 + 8, Hi(Word(PNoteTestReg^)));
+    ChangeFreq(FreqRegs[8], 8, ShortInt(CurInstr^.PitchShift));
   end;
 end;
 
@@ -100,6 +105,37 @@ begin
   if not IsPlaying then
     Exit;
   // Playing
+  for CurChannel := 0 to NepperRec.ChannelCount - 1 do
+  begin     
+    PChannel := @PPattern^[CurChannel];
+    PCell := @PChannel^.Cells[CurCell];
+    PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
+    // Effect
+    if Word(PCell^.Effect) <> 0 then
+    begin
+      case PCell^.Effect.Effect of
+        5: // Stop / Start release phase
+          begin
+            Adlib.NoteOff(CurChannel);
+            Word(LastEffectList[CurChannel]) := 0;
+          end;
+        $D:
+          begin
+            CurCell := $40;
+          end;
+        $F:
+          begin
+            CurSpeed := Byte(Word(PCell^.Effect));
+          end;
+      end;
+    end;
+    if PInstrument^.PitchShift <> 0 then
+    begin
+      ChangeFreq(FreqRegs[CurChannel], CurChannel, ShortInt(PInstrument^.PitchShift));
+    end;
+    //
+  end;
+  //
   Inc(CurTicks);
   if CurTicks < CurSpeed then
     Exit;
@@ -145,25 +181,17 @@ begin
       end;
     end;
   end;
+  //
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-  begin
+  begin 
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
+    PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
+    // Note
     if Byte(PCell^.Note) <> 0 then
     begin
       LastNoteList[CurChannel] := PCell^.Note;
       Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave);
-    end;
-    //
-    if Word(PCell^.Effect) <> 0 then
-    begin        
-      case PCell^.Effect.Effect of
-        5: // Stop / Start release phase
-          begin
-            Adlib.NoteOff(CurChannel);
-            Word(LastEffectList[CurChannel]) := 0;
-          end;
-      end;
     end;
   end;
   //
