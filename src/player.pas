@@ -14,7 +14,7 @@ procedure Stop;
 implementation
 
 uses
-  Adlib, Formats, EdInstr, Screen;
+  Adlib, Formats, EdInstr, Screen, Utils;
 
 var
   I: Byte;
@@ -33,10 +33,10 @@ var
   LastNoteList: array[0..7] of TNepperNote;
   LastEffectList: array[0..7] of TNepperEffect;
   LastInstrumentList: array[0..7] of Byte;
+  GS2: String2;
+  ColorStatus: Byte;
 
 procedure Start(const PatternIndex: Byte = 0);
-var
-  C: Byte;
 begin
   Stop;
   CurTicks := 0;
@@ -61,12 +61,11 @@ begin
   end;
   FillChar(LastNoteList[0], SizeOf(LastNoteList), 0);      
   FillChar(LastEffectList[0], SizeOf(LastEffectList), 0);
-  IsPlaying := True;
+  IsPlaying := True;  
   if IsPatternOnly then
-    C := $19
+    ColorStatus := $19
   else
-    C := $1A;
-  Screen.WriteText(73, 0, C, 'PLAYING', 7);
+    ColorStatus := $1A;
 end;
 
 procedure ChangeFreq(var Reg: TAdlibRegA0B8; const Channel: Byte; const Freq: ShortInt); inline;
@@ -194,6 +193,12 @@ begin
       Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave);
     end;
   end;
+  //
+  HexStrFast2(CurPatternIndex, GS2);
+  Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
+  Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '-');
+  HexStrFast2(CurCell, GS2);
+  Screen.WriteTextFast2(ScreenPointer + 78, ColorStatus, GS2);
   //
   Inc(CurCell);
 end;

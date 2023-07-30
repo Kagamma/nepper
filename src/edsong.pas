@@ -83,8 +83,10 @@ begin
 end;
 
 procedure LoopEditSheet;
-  procedure MoveLeft(const Step: Byte);
+  procedure MoveLeft(Step: Byte);
   begin
+    if Integer(PatternIndex) - Integer(Step) < 0 then
+      Step := PatternIndex;
     if PatternIndex - Step >= 0 then
     begin
       Dec(PatternIndex, Step);
@@ -98,8 +100,10 @@ procedure LoopEditSheet;
     end;
   end;
 
-  procedure MoveRight(const Step: Byte);
-  begin
+  procedure MoveRight(Step: Byte);
+  begin 
+    if Integer(PatternIndex) + Integer(Step) > $FF then
+      Step := $FF - PatternIndex;
     if PatternIndex + Step <= High(NepperRec.PatternIndices) then
     begin
       Inc(PatternIndex, Step);
@@ -152,7 +156,7 @@ var
   OldCursorX,
   OldCursorY: Byte;
 begin
-  Input.InputHex2(S, NepperRec.PatternIndices[PatternIndex], $1F);
+  Input.InputHex2(S, NepperRec.PatternIndices[PatternIndex], $3F);
   case NepperRec.PatternIndices[PatternIndex] of
     SONG_REPEAT:
       WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'R', 2);

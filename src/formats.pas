@@ -8,6 +8,8 @@ uses
   Adlib;
 
 const
+  SONG_MAGIC = $B00B;
+  SONG_VERSION = 1;
   SONG_HALT = $FF;
   SONG_REPEAT = $FE;
 
@@ -43,7 +45,8 @@ type
   TNepperPattern = array[0..7] of TNepperChannel;
 
   TNepperRec = packed record
-    Magic: DWord;
+    Magic: Word;
+    Version: Byte;
     Name: String[40];
     IsOPL3: Boolean;
     ChannelCount: ShortInt;
@@ -55,17 +58,22 @@ var
   NepperRec: TNepperRec;
   Patterns: array[0..$3F] of PNepperPattern;
 
-procedure SaveInstrument(const FileName: String; const Inst: PAdlibInstrument);
-function LoadInstrument(const FileName: String; const Inst: PAdlibInstrument): Boolean;
-procedure SaveSong(const FileName: String);
-function LoadSong(const FileName: String): Boolean;
+procedure SaveInstrument(FileName: String; const Inst: PAdlibInstrument);
+function LoadInstrument(FileName: String; const Inst: PAdlibInstrument): Boolean;
+procedure SaveSong(FileName: String);
+function LoadSong(FileName: String): Boolean;
 
 implementation
 
-procedure SaveInstrument(const FileName: String; const Inst: PAdlibInstrument);
+uses
+  Utils;
+
+procedure SaveInstrument(FileName: String; const Inst: PAdlibInstrument);
 var
   F: File of TAdlibInstrument;
-begin
+begin 
+  if FindCharPos(FileName, '.') = 0 then
+    FileName := FileName + '.nis';
   if FileName = '' then
     Exit;
   Assign(F, FileName);
@@ -74,10 +82,12 @@ begin
   Close(F);
 end;
 
-function LoadInstrument(const FileName: String; const Inst: PAdlibInstrument): Boolean;
+function LoadInstrument(FileName: String; const Inst: PAdlibInstrument): Boolean;
 var
   F: File of TAdlibInstrument;
 begin
+  if FindCharPos(FileName, '.') = 0 then
+    FileName := FileName + '.nis';
   Result := False;
   if FileName = '' then
     Exit;
@@ -93,13 +103,16 @@ begin
   end;
 end;
 
-procedure SaveSong(const FileName: String);
+procedure SaveSong(FileName: String);
 begin
-
+  if FindCharPos(FileName, '.') = 0 then
+    FileName := FileName + '.ntr';
 end;
 
-function LoadSong(const FileName: String): Boolean;
+function LoadSong(FileName: String): Boolean;
 begin
+  if FindCharPos(FileName, '.') = 0 then
+    FileName := FileName + '.ntr';
   Result := False;
 end;
 
