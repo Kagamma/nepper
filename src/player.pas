@@ -181,10 +181,9 @@ begin
   // Change to next PPattern
   if CurCell > $3F then
   begin
-    if IsPatternOnly then
+    if not IsPatternOnly then
     begin
-      Stop;
-      Exit;
+      CurCell := 0;
     end else
     begin
       CurCell := 0;
@@ -231,9 +230,9 @@ begin
     begin
       LastNoteList[CurChannel] := PCell^.Note;
       Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave);
-      Screen.WriteTextFast1(ScreenPointer + 67 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
+      Screen.WriteTextFast1(ScreenPointer + 66 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
     end else
-      Screen.WriteTextFast1(ScreenPointer + 67 + CurChannel, $1F, ' ');
+      Screen.WriteTextFast1(ScreenPointer + 66 + CurChannel, $1F, ' ');
   end;
   //
   HexStrFast2(CurCell, GS2);
@@ -249,7 +248,7 @@ begin
     Adlib.NoteClear(I);
   end;
   IsPlaying := False; 
-  Screen.WriteText(67, 0, $1F, '', 13);
+  Screen.WriteText(66, 0, $1F, '', 14);
 end;
 
 end.
