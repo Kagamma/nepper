@@ -117,11 +117,11 @@ begin
     for I := 0 to $3F do
     begin
       if PC^[I].Note.Note = 0 then
-        WriteTextFast3(PW, $0D, '---')
+        WriteTextFast3(PW, COLOR_LABEL, '---')
       else
       begin
-        WriteTextFast2(PW, $0D, ADLIB_NOTESYM_TABLE[PC^[I].Note.Note]);
-        WriteTextFast1(PW + 2, $0D, Char(PC^[I].Note.Octave + Byte('0')));
+        WriteTextFast2(PW, COLOR_LABEL, ADLIB_NOTESYM_TABLE[PC^[I].Note.Note]);
+        WriteTextFast1(PW + 2, COLOR_LABEL, Char(PC^[I].Note.Octave + Byte('0')));
       end;
       W := Word(PC^[I].Effect);
       GS3[1] := BASE16_CHARS[Byte(W shr 8) and $F];
@@ -153,11 +153,11 @@ begin
   for I := 0 to $3F do
   begin
     if PC^[I].Note.Note = 0 then
-      WriteTextFast3(PW, $0D, '---')
+      WriteTextFast3(PW, COLOR_LABEL, '---')
     else
     begin
-      WriteTextFast2(PW, $0D, ADLIB_NOTESYM_TABLE[PC^[I].Note.Note]);
-      WriteTextFast1(PW + 2, $0D, Char(PC^[I].Note.Octave + Byte('0')));
+      WriteTextFast2(PW, COLOR_LABEL, ADLIB_NOTESYM_TABLE[PC^[I].Note.Note]);
+      WriteTextFast1(PW + 2, COLOR_LABEL, Char(PC^[I].Note.Octave + Byte('0')));
     end;
     W := Word(PC^[I].Effect);
     GS3[1] := BASE16_CHARS[Byte(W shr 8) and $F];
@@ -176,18 +176,18 @@ begin
   WriteText(0, 1, $0E, '     [F2] Song/Pattern Editor  [F3] Instrument Editor  [ESC] Exit Nepper');
 
   WriteText(0, 3, $4E, ' SONG DATA    ');
-  WriteText(0, 5, $0D, 'Song name:');
-  WriteText(63, 5, $0D, 'SPECIAL COMMANDS:');
-  WriteText(0, 6, $0D, ' Position:');
-  WriteText(63, 6, $0D, '[R] For Repeat');
-  WriteText(0, 7, $0D, '  Pattern:');
-  WriteText(63, 7, $0D, '[H] For Halt');
+  WriteText(0, 5, COLOR_LABEL, 'Song name:');
+  WriteText(63, 5, COLOR_LABEL, 'SPECIAL COMMANDS:');
+  WriteText(0, 6, COLOR_LABEL, ' Position:');
+  WriteText(63, 6, COLOR_LABEL, '[R] For Repeat');
+  WriteText(0, 7, COLOR_LABEL, '  Pattern:');
+  WriteText(63, 7, COLOR_LABEL, '[H] For Halt');
 
   WriteText(0, 9, $4E, ' PATTERN DATA ');
-  WriteText(16, 9, $0D, 'Pattern:');
-  WriteText(27, 9, $0D, 'Instr:');
-  WriteText(63, 9, $0D, 'Octave:');
-  WriteText(72, 9, $0D, 'Step:');
+  WriteText(16, 9, COLOR_LABEL, 'Pattern:');
+  WriteText(27, 9, COLOR_LABEL, 'Instr:');
+  WriteText(63, 9, COLOR_LABEL, 'Octave:');
+  WriteText(72, 9, COLOR_LABEL, 'Step:');
 
   WriteText(0, 23, $0A, '');
   WriteText(0, 24, $0A, '');
@@ -255,15 +255,15 @@ var
     end;
     if IsEditMode then
     begin
-      PC^.Cells[CurCell].Note.Note := Note;   
+      PC^.Cells[CurCell].Note.Note := Note;
       PC^.Cells[CurCell].Note.Octave := Octave;
       if (Note = 0) and (Octave = 0) then
       begin
-        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, $0D, '---', 3);
+        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, '---', 3);
       end else
       begin
-        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, $0D, ADLIB_NOTESYM_TABLE[Note], 2);
-        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + 2, PATTERN_SCREEN_START_Y + CurCell - Anchor, $0D, Char(Octave + Byte('0')), 1);
+        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, ADLIB_NOTESYM_TABLE[Note], 2);
+        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + 2, PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, Char(Octave + Byte('0')), 1);
         MoveDown(CurStep);
       end;
     end;
