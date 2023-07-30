@@ -28,11 +28,15 @@ var
   CurTicks: Byte = 0;
   CurSpeed: Byte = 6; // 40 for fmc?
   IsPatternOnly: Boolean;
+  TmpByte: Byte;
+  NoteByte: Byte;
+  OctaveByte: Byte;
   Note: TNepperNote;
   Effect: TNepperEffect;
   LastNoteList: array[0..7] of TNepperNote;
   LastEffectList: array[0..7] of TNepperEffect;
   LastInstrumentList: array[0..7] of Byte;
+  LastArpeggioList: array[0..7,0..1] of Byte;
   GS2: String2;
   ColorStatus: Byte;
 
@@ -104,6 +108,8 @@ begin
   if not IsPlaying then
     Exit;
   // Playing
+
+  // Handle effect
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
   begin     
     PChannel := @PPattern^[CurChannel];
@@ -113,26 +119,55 @@ begin
     if Word(PCell^.Effect) <> 0 then
     begin
       case PCell^.Effect.Effect of
-        5: // Stop / Start release phase
+        0: // Arpeggio
           begin
-            Adlib.NoteOff(CurChannel);
-            Word(LastEffectList[CurChannel]) := 0;
+            if Byte(Word(PCell^.Effect)) <> 0 then
+            begin
+              LastArpeggioList[CurChannel, 0] := PCell^.Effect.V1;
+              LastArpeggioList[CurChannel, 1] := PCell^.Effect.V2;
+            end;
           end;
-        $D:
-          begin
-            CurCell := $40;
-          end;
-        $F:
+        $E: // Speed
           begin
             CurSpeed := Byte(Word(PCell^.Effect));
           end;
+        $F: // Functions
+          begin
+            case Byte(Word(PCell^.Effect)) of
+              0: // Stop / Start release phase
+                begin
+                  Adlib.NoteOff(CurChannel);
+                  Word(LastEffectList[CurChannel]) := 0;
+                end;
+              1: // Jump to next pattern
+                begin
+                  CurCell := $40;
+                end;
+            end;
+          end;
       end;
     end;
+    // Handle pitch shift
     if PInstrument^.PitchShift <> 0 then
     begin
       ChangeFreq(FreqRegs[CurChannel], CurChannel, ShortInt(PInstrument^.PitchShift));
     end;
-    //
+    // Handle arpeggio
+    if (CurTicks >= 1) and (CurTicks <= 2) then
+    begin
+      if LastArpeggioList[CurChannel, CurTicks - 1] <> 0 then
+      begin
+        NoteByte := LastNoteList[CurChannel].Note + LastArpeggioList[CurChannel, CurTicks - 1];
+        if NoteByte > 12 then
+        begin
+          NoteByte := NoteByte - 12;
+          OctaveByte := LastNoteList[CurChannel].Octave + 1;
+        end else
+          OctaveByte := LastNoteList[CurChannel].Octave;
+        Adlib.NoteOn(CurChannel, NoteByte, OctaveByte);
+        LastArpeggioList[CurChannel, CurTicks - 1] := 0;
+      end;
+    end
   end;
   //
   Inc(CurTicks);
@@ -180,7 +215,7 @@ begin
       end;
     end;
   end;
-  //
+  // Play note
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
   begin 
     PChannel := @PPattern^[CurChannel];
@@ -191,7 +226,9 @@ begin
     begin
       LastNoteList[CurChannel] := PCell^.Note;
       Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave);
-    end;
+      Screen.WriteTextFast1(ScreenPointer + 67 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
+    end else
+      Screen.WriteTextFast1(ScreenPointer + 67 + CurChannel, $1F, ' ');
   end;
   //
   HexStrFast2(CurPatternIndex, GS2);
@@ -210,7 +247,7 @@ begin
     Adlib.NoteClear(I);
   end;
   IsPlaying := False; 
-  Screen.WriteText(73, 0, $1F, '', 7);
+  Screen.WriteText(67, 0, $1F, '', 13);
 end;
 
 end.

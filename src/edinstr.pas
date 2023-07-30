@@ -430,9 +430,9 @@ begin
                   begin
                     SaveInstrument(S, CurInstr);
                     S := '';
-                    RenderTexts;
-                    RenderInstrInfo;
-                  end;
+                  end; 
+                  RenderTexts;
+                  RenderInstrInfo;
                   Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
                   Continue;
                 end;
@@ -442,11 +442,11 @@ begin
                   if ShowInputDialog('Load Instrument', S) then
                   begin
                     if not LoadInstrument(S, CurInstr) then
-                      ShowMessageDialog('Error', 'File not found!');
+                      ShowMessageDialog('Error', 'File not found / Invalid format!');
                     S := '';
-                    RenderTexts;
-                    RenderInstrInfo;
-                  end;
+                  end;    
+                  RenderTexts;
+                  RenderInstrInfo;
                   Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
                   Continue;
                 end;

@@ -8,7 +8,8 @@ uses
   Adlib;
 
 const
-  SONG_MAGIC = $B00B;
+  INSTRUMENT_MAGIC = $BAB0;
+  SONG_MAGIC = $0BB0;
   SONG_VERSION = 1;
   SONG_HALT = $FF;
   SONG_REPEAT = $FE;
@@ -54,6 +55,11 @@ type
     PatternIndices: array[0..$FF] of Byte;
   end;
 
+  TNepperInstrumentHeader = packed record
+    Magic: Word;
+    Version: Byte;
+  end;
+
 var
   NepperRec: TNepperRec;
   Patterns: array[0..$3F] of PNepperPattern;
@@ -70,21 +76,26 @@ uses
 
 procedure SaveInstrument(FileName: String; const Inst: PAdlibInstrument);
 var
-  F: File of TAdlibInstrument;
+  H: TNepperInstrumentHeader;
+  F: File;
 begin 
   if FindCharPos(FileName, '.') = 0 then
     FileName := FileName + '.nis';
   if FileName = '' then
     Exit;
   Assign(F, FileName);
-  Rewrite(F);
-  Write(F, Inst^);
+  Rewrite(F, 1);
+  H.Magic := INSTRUMENT_MAGIC;
+  H.Version := 1;
+  BlockWrite(F, H.Magic, SizeOf(TNepperInstrumentHeader));
+  BlockWrite(F, Inst^.Operators[0], SizeOf(TAdlibInstrument));
   Close(F);
 end;
 
 function LoadInstrument(FileName: String; const Inst: PAdlibInstrument): Boolean;
 var
-  F: File of TAdlibInstrument;
+  H: TNepperInstrumentHeader;
+  F: File;
 begin
   if FindCharPos(FileName, '.') = 0 then
     FileName := FileName + '.nis';
@@ -93,11 +104,17 @@ begin
     Exit;
   Assign(F, FileName);
   {$I-}
-  System.Reset(F);
+  System.Reset(F, 1);
   {$I+}
   if IOResult = 0 then
   begin
-    Read(F, Inst^);
+    BlockRead(F, H.Magic, SizeOf(TNepperInstrumentHeader));
+    if H.Magic <> INSTRUMENT_MAGIC then
+    begin
+      Close(F);
+      Exit(False);
+    end;
+    BlockRead(F, Inst^.Operators[0], SizeOf(TAdlibInstrument));
     Close(F);
     Result := True;
   end;

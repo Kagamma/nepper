@@ -254,7 +254,7 @@ begin
               if ShowInputDialog('Load song', S) then
               begin     
                 if not LoadSong(S) then
-                  ShowMessageDialog('Error', 'File not found!');
+                  ShowMessageDialog('Error', 'File not found / Invalid format!');
                 S := '';
               end;
               Screen.SetCursorPosition(OldCursorX, OldCursorY);
