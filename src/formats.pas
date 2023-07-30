@@ -24,8 +24,7 @@ type
   TNepperEffect = bitpacked record
     V2: TBit4;
     V1: TBit4;
-    Effect: TBit4;
-    Unused: TBit4;
+    Effect: Byte;
   end;
 
   PNepperChannelCell = ^TNepperChannelCell;
