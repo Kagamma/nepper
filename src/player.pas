@@ -69,7 +69,10 @@ begin
   if IsPatternOnly then
     ColorStatus := $19
   else
-    ColorStatus := $1A;
+    ColorStatus := $1A;  
+  HexStrFast2(CurPatternIndex, GS2);
+  Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
+  Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '-');
 end;
 
 procedure ChangeFreq(var Reg: TAdlibRegA0B8; const Channel: Byte; const Freq: ShortInt); inline;
@@ -213,7 +216,9 @@ begin
           LastInstrumentList[CurChannel] := PChannel^.InstrumentIndex;
         end;
       end;
-    end;
+    end;       
+    HexStrFast2(CurPatternIndex, GS2);
+    Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
   end;
   // Play note
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
@@ -231,9 +236,6 @@ begin
       Screen.WriteTextFast1(ScreenPointer + 67 + CurChannel, $1F, ' ');
   end;
   //
-  HexStrFast2(CurPatternIndex, GS2);
-  Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
-  Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '-');
   HexStrFast2(CurCell, GS2);
   Screen.WriteTextFast2(ScreenPointer + 78, ColorStatus, GS2);
   //
