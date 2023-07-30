@@ -41,7 +41,8 @@ procedure RenderSongInfoFast;
 var
   I, P: Byte;
   S: String2;
-begin
+begin   
+  WriteText(10, 5, $0F, NepperRec.Name, 40);
   for I := 0 to $F do
   begin
     P := PatternAnchor + I;
@@ -227,7 +228,7 @@ begin
             end;
           '>':
             begin
-              if NepperRec.ChannelCount < 8 then
+              if NepperRec.ChannelCount < MAX_CHANNELS then
               begin
                 Inc(NepperRec.ChannelCount);  
                 EdPattern.ResetParams;
@@ -243,7 +244,9 @@ begin
               begin
                 SaveSong(S);
                 S := '';
-              end;
+              end;   
+              RenderSongInfo;
+              EdPattern.RenderPatternInfo;
               Screen.SetCursorPosition(OldCursorX, OldCursorY);
             end;
           'l':
@@ -257,6 +260,8 @@ begin
                   ShowMessageDialog('Error', 'File not found / Invalid format!');
                 S := '';
               end;
+              RenderSongInfo;
+              EdPattern.RenderPatternInfo;
               Screen.SetCursorPosition(OldCursorX, OldCursorY);
             end;
         end;
