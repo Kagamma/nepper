@@ -18,7 +18,7 @@ uses
 
 var
   I: Byte;
-  CurPatternIndex: Byte = 0;
+  CurPatternIndex: Byte;
   PInstrument: PAdlibInstrument;
   PPattern: PNepperPattern;
   PChannel: PNepperChannel;
@@ -51,11 +51,24 @@ begin
     CurPatternIndex := PatternIndex;
     PPattern := Formats.Patterns[PatternIndex];
     IsPatternOnly := True;
+    ColorStatus := $19;
+    Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, '--');
+    Screen.WriteTextFast1(ScreenPointer + 74, ColorStatus, '/');
+    HexStrFast2(CurPatternIndex, GS2);
+    Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
+    Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
   end else
   begin             
     CurPatternIndex := 0;
     PPattern := Formats.Patterns[NepperRec.PatternIndices[CurPatternIndex]];
     IsPatternOnly := False;
+    ColorStatus := $1A;
+    HexStrFast2(CurPatternIndex, GS2);
+    Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
+    Screen.WriteTextFast1(ScreenPointer + 74, ColorStatus, '/');
+    HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
+    Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
+    Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
   end;
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
   begin   
@@ -65,14 +78,7 @@ begin
   end;
   FillChar(LastNoteList[0], SizeOf(LastNoteList), 0);      
   FillChar(LastEffectList[0], SizeOf(LastEffectList), 0);
-  IsPlaying := True;  
-  if IsPatternOnly then
-    ColorStatus := $19
-  else
-    ColorStatus := $1A;  
-  HexStrFast2(CurPatternIndex, GS2);
-  Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
-  Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '-');
+  IsPlaying := True;
 end;
 
 procedure ChangeFreq(var Reg: TAdlibRegA0B8; const Channel: Byte; const Freq: ShortInt); inline;
@@ -181,7 +187,7 @@ begin
   // Change to next PPattern
   if CurCell > $3F then
   begin
-    if not IsPatternOnly then
+    if IsPatternOnly then
     begin
       CurCell := 0;
     end else
@@ -214,10 +220,12 @@ begin
           Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PChannel^.InstrumentIndex]);
           LastInstrumentList[CurChannel] := PChannel^.InstrumentIndex;
         end;
-      end;
-    end;       
-    HexStrFast2(CurPatternIndex, GS2);
-    Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
+      end;    
+      HexStrFast2(CurPatternIndex, GS2);
+      Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
+      HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
+      Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
+    end;
   end;
   // Play note
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
@@ -230,9 +238,9 @@ begin
     begin
       LastNoteList[CurChannel] := PCell^.Note;
       Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave);
-      Screen.WriteTextFast1(ScreenPointer + 66 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
+      Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
     end else
-      Screen.WriteTextFast1(ScreenPointer + 66 + CurChannel, $1F, ' ');
+      Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $1F, ' ');
   end;
   //
   HexStrFast2(CurCell, GS2);
@@ -248,7 +256,7 @@ begin
     Adlib.NoteClear(I);
   end;
   IsPlaying := False; 
-  Screen.WriteText(66, 0, $1F, '', 14);
+  Screen.WriteText(63, 0, $1F, '', 17);
 end;
 
 end.
