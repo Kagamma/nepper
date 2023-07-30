@@ -14,7 +14,7 @@ procedure Stop;
 implementation
 
 uses
-  Adlib, Formats, EdInstr, Screen, Utils;
+  Adlib, Formats, EdInstr, Screen, Utils, Timer;
 
 var
   I: Byte;
@@ -135,6 +135,10 @@ begin
               LastArpeggioList[CurChannel, 0] := PCell^.Effect.V1;
               LastArpeggioList[CurChannel, 1] := PCell^.Effect.V2;
             end;
+          end;
+        $B: // BPM
+          begin
+            InstallTimer(Byte(Word(PCell^.Effect)));
           end;
         $E: // Speed
           begin

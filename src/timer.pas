@@ -4,6 +4,8 @@ unit Timer;
 
 interface
 
+procedure InstallTimer(const Hz: Byte);
+
 implementation
 
 uses
@@ -12,12 +14,12 @@ uses
 var
   OldTimerHandle: Pointer;
 
-procedure InstallTimer;
+procedure InstallTimer(const Hz: Byte);
 var
   Divisor: DWord;
 begin
   asm cli end;
-  Divisor := 1193182 div 50;
+  Divisor := 1193182 div Hz;
   Port[$43] := $36;
   Port[$40] := Byte(Divisor);
   Port[$40] := Byte(Divisor shr 8);
@@ -41,7 +43,7 @@ end;
 initialization
   GetIntVec($1C, OldTimerHandle);
   SetIntVec($1C, @TimerHandler);
-  InstallTimer;
+  InstallTimer(50);
 
 finalization
   SetIntVec($1C, OldTimerHandle);
