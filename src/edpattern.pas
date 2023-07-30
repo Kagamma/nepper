@@ -36,7 +36,7 @@ var
   CurCellPart: Byte = 0;
   CurOctave: Byte = 4;
   CurStep: Byte = 1;
-  IsEditMode: Boolean = False;
+  IsEditMode: Boolean = True;
   GS2: String2;
   GS3: String3;
 
