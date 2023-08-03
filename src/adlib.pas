@@ -226,7 +226,7 @@ begin
   N^.Freq := ADLIB_FREQ_TABLE[Note] + FineTune;
   N^.Octave := Octave;
   N^.KeyOn := 1;   
-  FreqPrecisionList[Channel] := DWord(N^.Freq) * 1000;
+  FreqPrecisionList[Channel] := DWord(N^.Freq) shl 8;
   WriteReg($A0 + Channel, Lo(Word(N^)));
   WriteReg($B0 + Channel, Hi(Word(N^)));
 end;
@@ -248,14 +248,14 @@ end;
 
 procedure SetRegFreq(const Channel: Byte; const Freq: Word);
 begin
-  FreqPrecisionList[Channel] := DWord(Freq) * 1000;
-  FreqRegs[Channel].Freq := FreqPrecisionList[Channel] div 1000;
+  FreqPrecisionList[Channel] := DWord(Freq) shl 8;
+  FreqRegs[Channel].Freq := FreqPrecisionList[Channel] shr 8;
 end;
 
 procedure ModifyRegFreq(const Channel: Byte; const Freq: Integer; const Ticks: Byte);
 begin
-  Inc(FreqPrecisionList[Channel], Freq * 1000 div Ticks);
-  FreqRegs[Channel].Freq := FreqPrecisionList[Channel] div 1000;
+  Inc(FreqPrecisionList[Channel], (Freq shl 8) div Ticks);
+  FreqRegs[Channel].Freq := FreqPrecisionList[Channel] shr 8;
 end;
 
 end.
