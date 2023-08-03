@@ -114,19 +114,26 @@ begin
 end;
 
 procedure InputHex3(var S: String; var Value: Word; const MaxValue: Word);
+var
+  C: Char;
 begin
-  HexStrFast3(Value, S);
-  InputText(S, 3, True);
+  HexStrFast2(Byte(Value), S);
+  if Byte(Value shr 8) = 0 then
+    Insert('0', S, 1)
+  else
+    Insert(Char(Value shr 8), S, 1);
+  C := S[1];
+  InputText(S, 4, InputCursor <> 1);
   if KBInput.ScanCode = $FF then
-  begin
+  begin   
+    if Length(S) > 3 then
+      Delete(S, 2, 1);
     S := UpCase(S);
-    Value := HexToInt(S);
-    if Value > MaxValue then
-    begin
-      HexStrFast3(MaxValue, S);
-      Value := MaxValue;
-    end;
+    C := S[1];
+    S[1] := '0';
+    Value := (Word(C) shl 8) + HexToInt(S);
   end;
+  S[1] := C;
 end;
 
 procedure InputYesNo(var S: String; var Value: Byte);

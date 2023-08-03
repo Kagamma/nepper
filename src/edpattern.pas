@@ -124,7 +124,9 @@ begin
         WriteTextFast1(PW + 2, COLOR_LABEL, Char(PC^[I].Note.Octave + Byte('0')));
       end;
       W := Word(PC^[I].Effect);
-      GS3[1] := BASE16_CHARS[Byte(W shr 8) and $F];
+      GS3[1] := Char(W shr 8);
+      if Byte(GS3[1]) = 0 then
+        GS3[1] := '0';
       GS3[2] := BASE16_CHARS[Byte(W shr 4) and $F];
       GS3[3] := BASE16_CHARS[Byte(W) and $F];
       WriteTextFast3(PW + 3, $0F, GS3);
@@ -160,7 +162,9 @@ begin
       WriteTextFast1(PW + 2, COLOR_LABEL, Char(PC^[I].Note.Octave + Byte('0')));
     end;
     W := Word(PC^[I].Effect);
-    GS3[1] := BASE16_CHARS[Byte(W shr 8) and $F];
+    GS3[1] := Char(W shr 8);
+    if Byte(GS3[1]) = 0 then
+      GS3[1] := '0';
     GS3[2] := BASE16_CHARS[Byte(W shr 4) and $F];
     GS3[3] := BASE16_CHARS[Byte(W) and $F];
     WriteTextFast3(PW + 3, $0F, GS3);
@@ -205,7 +209,7 @@ end;
 
 procedure LoopEditPattern;
 var
-  S: String3;
+  S: String10;
   PC: PNepperChannel;
   W: Word;
   PW: PWord;
@@ -525,88 +529,103 @@ begin
   end;
 end;
 
-procedure LoopEditOctave;
+function LoopEditOctave: Boolean;
 var
   PC: PNepperChannel;
 begin  
   PC := @CurPattern^[CurChannel];
-  case KBInput.CharCode of
-    ')':
-      begin
-        CurOctave := 0;
-        RenderOctave;
-      end;
-    '!':
-      begin
-        CurOctave := 1;
-        RenderOctave;
-      end;
-    '@':
-      begin
-        CurOctave := 2;
-        RenderOctave;
-      end;
-    '#':
-      begin
-        CurOctave := 3;
-        RenderOctave;
-      end;
-    '$':
-      begin
-        CurOctave := 4;
-        RenderOctave;
-      end;
-    '%':
-      begin
-        CurOctave := 5;
-        RenderOctave;
-      end;
-    '^':
-      begin
-        CurOctave := 6;
-        RenderOctave;
-      end;
-    '<':
-      begin
-        if PC^.InstrumentIndex > 0 then
+  Result := False;
+  if Keyboard.IsShift then
+    case KBInput.CharCode of
+      ')':
         begin
-          Dec(PC^.InstrumentIndex);
-          RenderInstrument;
-          Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PC^.InstrumentIndex]);
+          CurOctave := 0;
+          RenderOctave;
+          Result := True;
         end;
-      end;
-    '>':
-      begin
-        if PC^.InstrumentIndex < 31 then
+      '!':
         begin
-          Inc(PC^.InstrumentIndex);
-          RenderInstrument;
-          Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PC^.InstrumentIndex]);
+          CurOctave := 1;
+          RenderOctave;  
+          Result := True;
         end;
-      end;
-  end;
+      '@':
+        begin
+          CurOctave := 2;
+          RenderOctave; 
+          Result := True;
+        end;
+      '#':
+        begin
+          CurOctave := 3;
+          RenderOctave;  
+          Result := True;
+        end;
+      '$':
+        begin
+          CurOctave := 4;
+          RenderOctave;  
+          Result := True;
+        end;
+      '%':
+        begin
+          CurOctave := 5;
+          RenderOctave;   
+          Result := True;
+        end;
+      '^':
+        begin
+          CurOctave := 6;
+          RenderOctave;
+          Result := True;
+        end;
+      '<':
+        begin
+          if PC^.InstrumentIndex > 0 then
+          begin
+            Dec(PC^.InstrumentIndex);
+            RenderInstrument;
+            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PC^.InstrumentIndex]);
+          end;     
+          Result := True;
+        end;
+      '>':
+        begin
+          if PC^.InstrumentIndex < 31 then
+          begin
+            Inc(PC^.InstrumentIndex);
+            RenderInstrument;
+            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PC^.InstrumentIndex]);
+          end; 
+          Result := True;
+        end;
+    end;
 end;
 
-procedure LoopEditStep;
-begin
-  case KBInput.ScanCode of
-    SCAN_UP:
-      begin
-        if CurStep < 9 then
+function LoopEditStep: Boolean;
+begin      
+  Result := False;
+  if Keyboard.IsShift then
+    case KBInput.ScanCode of
+      SCAN_UP:
         begin
-          Inc(CurStep);
-          RenderStep;
+          if CurStep < 9 then
+          begin
+            Inc(CurStep);
+            RenderStep;
+          end;    
+          Result := True;
         end;
-      end;        
-    SCAN_DOWN:
-      begin
-        if CurStep > 0 then
+      SCAN_DOWN:
         begin
-          Dec(CurStep);
-          RenderStep;
+          if CurStep > 0 then
+          begin
+            Dec(CurStep);
+            RenderStep;
+          end;
+          Result := True;
         end;
-      end;
-  end;
+    end;
 end;
 
 procedure Loop;
@@ -616,20 +635,15 @@ begin
   Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE), PATTERN_SCREEN_START_Y + CurCell - Anchor);
   repeat
     Keyboard.WaitForInput;
-    if Keyboard.IsShift then
-    begin
-      LoopEditOctave;  
-      LoopEditStep;
-    end else
-    begin
-      LoopEditPattern;
-      case KBInput.ScanCode of
-        SCAN_ENTER:
-          begin
-            IsEditMode := not IsEditMode;
-            RenderEditModeText;
-          end;
-      end;
+    if LoopEditOctave then Continue;
+    if LoopEditStep then Continue;
+    LoopEditPattern;
+    case KBInput.ScanCode of
+      SCAN_ENTER:
+        begin
+          IsEditMode := not IsEditMode;
+          RenderEditModeText;
+        end;
     end;
   until (KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F3) or (KBInput.ScanCode = SCAN_TAB);
   if KBInput.ScanCode = SCAN_TAB then
