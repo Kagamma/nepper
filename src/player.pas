@@ -81,7 +81,7 @@ begin
   IsPlaying := True;
 end;
 
-procedure ChangeFreq(var Reg: TAdlibRegA0B8; const Channel: Byte; const Freq: ShortInt); inline;
+procedure ChangeFreq(var Reg: TAdlibRegA0B8; const Channel: Byte; const Freq: Integer); inline;
 begin
   Reg.Freq := Reg.Freq + Freq;
   if Reg.Freq >= ADLIB_FREQ_TABLE[13] then
@@ -113,17 +113,16 @@ begin
     Exit;
   // Playing
 
-  // Handle effect
+  // Pre Effect
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
   begin     
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
     PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
-    // Effect
     if Word(PCell^.Effect) <> 0 then
     begin
-      case PCell^.Effect.Effect of
-        0: // Arpeggio
+      case Char(PCell^.Effect.Effect) of
+        '0', #0: // Arpeggio
           begin
             if Byte(Word(PCell^.Effect)) <> 0 then
             begin
@@ -131,15 +130,15 @@ begin
               LastArpeggioList[CurChannel, 1] := PCell^.Effect.V2;
             end;
           end;
-        $B: // BPM
+        'B': // BPM
           begin
             InstallTimer(Byte(Word(PCell^.Effect)));
           end;
-        $E: // Speed
+        'E': // Speed
           begin
             CurSpeed := Byte(Word(PCell^.Effect));
           end;
-        $F: // Functions
+        'F': // Functions
           begin
             case Byte(Word(PCell^.Effect)) of
               0: // Stop / Start release phase
@@ -235,6 +234,34 @@ begin
       Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
     end else
       Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $1F, ' ');
+  end;
+  // Post Effect
+  for CurChannel := 0 to NepperRec.ChannelCount - 1 do
+  begin
+    PChannel := @PPattern^[CurChannel];
+    PCell := @PChannel^.Cells[CurCell];
+    PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
+    if Word(PCell^.Effect) <> 0 then
+    begin
+      case Char(PCell^.Effect.Effect) of
+        '1': // Freq slide up
+          begin
+            TmpByte := Byte(Word(PCell^.Effect));
+            if TmpByte = 0 then
+              TmpByte := Byte(Word(LastEffectList[CurChannel]));
+            ChangeFreq(FreqRegs[CurChannel], CurChannel, TmpByte);
+            LastEffectList[CurChannel] := PCell^.Effect;
+          end;
+        '2': // Freq slide down
+          begin  
+            TmpByte := Byte(Word(PCell^.Effect));
+            if TmpByte = 0 then
+              TmpByte := Byte(Word(LastEffectList[CurChannel]));
+            ChangeFreq(FreqRegs[CurChannel], CurChannel, -TmpByte);
+            LastEffectList[CurChannel] := PCell^.Effect;
+          end;
+      end;
+    end;
   end;
   //
   HexStrFast2(CurCell, GS2);
