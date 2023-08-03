@@ -119,7 +119,7 @@ type
   TAdlibInstrument = packed record
     Operators: array[0..3] of TAdlibInstrumentOperator; // 4 operators
     AlgFeedback: TAdlibRegC0C8;
-    PitchShift: Byte;
+    FineTune: ShortInt;
     Name: String[20];
   end;
 
@@ -130,7 +130,7 @@ function Check: Boolean;
 procedure Init;
 procedure Reset;
 procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);
-procedure NoteOn(const Channel, Note, Octave: Byte);
+procedure NoteOn(const Channel, Note, Octave: Byte; const FineTune: ShortInt = 0);
 procedure NoteOff(const Channel: Byte);
 procedure NoteClear(const Channel: Byte);
 procedure WriteReg(const Reg, Value: Byte);
@@ -213,14 +213,14 @@ begin
     WriteReg(I, 0);
 end;
 
-procedure NoteOn(const Channel, Note, Octave: Byte);
+procedure NoteOn(const Channel, Note, Octave: Byte; const FineTune: ShortInt = 0);
 var
   N: PAdlibRegA0B8;
 begin
   N := @FreqRegs[Channel];  
   N^.KeyOn := 0;    
   WriteReg($B0 + Channel, Hi(Word(N^)));
-  N^.Freq := ADLIB_FREQ_TABLE[Note];
+  N^.Freq := ADLIB_FREQ_TABLE[Note] + FineTune;
   N^.Octave := Octave;
   N^.KeyOn := 1;
   WriteReg($A0 + Channel, Lo(Word(N^)));

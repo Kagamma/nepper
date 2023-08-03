@@ -78,7 +78,7 @@ begin
   WriteTextBack(OP2_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
   WriteTextBack(OP2_X, 18, COLOR_LABEL, 'Volume Vibrator:');
 
-  WriteTextBack(OP3_X, 4, COLOR_LABEL, 'Pitch Shift:');
+  WriteTextBack(OP3_X, 4, COLOR_LABEL, 'Fine Tune:');
 
   WriteTextBack(76, 22, COLOR_LABEL, 'Test tone:');
   WriteText(0, 23, $0A, '[L] Load [<] Prev [SPC] Test  [+] Test Tone Up');
@@ -95,7 +95,7 @@ begin
   WriteText(OP1_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Alg));
   WriteText(OP2_X + 1, 3, $0F, CurInstr^.Name, 20);
   WriteText(OP2_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Feedback));
-  WriteText(OP3_X + 1, 4, $0F, HexStrFast2(CurInstr^.PitchShift));
+  WriteText(OP3_X + 1, 4, $0F, HexStrFast2(CurInstr^.FineTune));
   for I := 0 to 1 do
   begin
     Ofs := I * ((OP2_X + 2) - (OP1_X + 2));
@@ -298,9 +298,9 @@ begin
       //
       28:
         begin                      
-          V := CurInstr^.PitchShift;
+          V := Byte(CurInstr^.FineTune);
           Input.InputHex2(S, V, $FF);
-          CurInstr^.PitchShift := V;
+          CurInstr^.FineTune := ShortInt(V);
         end;
     end;
 
@@ -356,7 +356,7 @@ begin
           begin
             Adlib.SetInstrument(8, CurInstr);
             AdLib.NoteClear(8);
-            Adlib.NoteOn(8, TestNote.Note, TestNote.Octave);
+            Adlib.NoteOn(8, TestNote.Note, TestNote.Octave, CurInstr^.FineTune);
             IsInstrTesting := True;
           end;
         SCAN_ENTER:

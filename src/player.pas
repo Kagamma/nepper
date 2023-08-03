@@ -98,21 +98,16 @@ begin
   WriteReg($B0 + Channel, Hi(Word(Reg)));
 end;
 
-procedure PlayTestNote; inline;
+{procedure PlayTestNote; inline;
 begin
   if CurInstr^.PitchShift <> 0 then
   begin
     ChangeFreq(FreqRegs[8], 8, ShortInt(CurInstr^.PitchShift));
   end;
-end;
+end;}
 
 procedure Play;
 begin
-  // For testing instrument
-  if IsInstrTesting then
-  begin
-    PlayTestNote;
-  end;
   // Is playing?
   if not IsPlaying then
     Exit;
@@ -159,11 +154,6 @@ begin
             end;
           end;
       end;
-    end;
-    // Handle pitch shift
-    if PInstrument^.PitchShift <> 0 then
-    begin
-      ChangeFreq(FreqRegs[CurChannel], CurChannel, ShortInt(PInstrument^.PitchShift));
     end;
     // Handle arpeggio
     if (CurTicks >= 1) and (CurTicks <= 2) then
@@ -241,7 +231,7 @@ begin
     if Byte(PCell^.Note) <> 0 then
     begin
       LastNoteList[CurChannel] := PCell^.Note;
-      Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave);
+      Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave, PInstrument^.FineTune);
       Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
     end else
       Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $1F, ' ');
