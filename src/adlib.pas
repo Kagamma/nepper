@@ -125,6 +125,7 @@ type
 
 var
   FreqRegs: array[0..8] of TAdlibRegA0B8;
+  FreqPrecisionList: array[0..8] of DWord;
 
 function Check: Boolean;
 procedure Init;
@@ -133,6 +134,8 @@ procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);
 procedure NoteOn(const Channel, Note, Octave: Byte; const FineTune: ShortInt = 0);
 procedure NoteOff(const Channel: Byte);
 procedure NoteClear(const Channel: Byte);
+procedure SetRegFreq(const Channel: Byte; const Freq: Word); inline;
+procedure ModifyRegFreq(const Channel: Byte; const Freq: Integer; const Ticks: Byte); inline;
 procedure WriteReg(const Reg, Value: Byte);
 
 implementation
@@ -222,7 +225,8 @@ begin
   WriteReg($B0 + Channel, Hi(Word(N^)));
   N^.Freq := ADLIB_FREQ_TABLE[Note] + FineTune;
   N^.Octave := Octave;
-  N^.KeyOn := 1;
+  N^.KeyOn := 1;   
+  FreqPrecisionList[Channel] := DWord(N^.Freq) * 1000;
   WriteReg($A0 + Channel, Lo(Word(N^)));
   WriteReg($B0 + Channel, Hi(Word(N^)));
 end;
@@ -240,6 +244,18 @@ procedure NoteClear(const Channel: Byte);
 begin                           
   WriteReg($A0 + Channel, 0);
   WriteReg($B0 + Channel, 0);
+end;
+
+procedure SetRegFreq(const Channel: Byte; const Freq: Word);
+begin
+  FreqPrecisionList[Channel] := DWord(Freq) * 1000;
+  FreqRegs[Channel].Freq := FreqPrecisionList[Channel] div 1000;
+end;
+
+procedure ModifyRegFreq(const Channel: Byte; const Freq: Integer; const Ticks: Byte);
+begin
+  Inc(FreqPrecisionList[Channel], Freq * 1000 div Ticks);
+  FreqRegs[Channel].Freq := FreqPrecisionList[Channel] div 1000;
 end;
 
 end.
