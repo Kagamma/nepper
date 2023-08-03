@@ -229,6 +229,10 @@ begin
       begin
         if Char(PCell^.Effect.Effect) <> '3' then
         begin
+          if IsInstr then
+          begin
+            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PChannel^.InstrumentIndex]);
+          end;
           LastNoteList[CurChannel] := PCell^.Note;
           Byte(LastNoteFutureList[CurChannel]) := 0;
           Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave, PInstrument^.FineTune);

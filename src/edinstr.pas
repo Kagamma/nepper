@@ -9,6 +9,7 @@ uses
 
 var
   CurInstr: PAdlibInstrument;
+  IsInstr: Boolean;
   IsInstrTesting: Boolean = False;
 
 procedure Loop;
@@ -123,6 +124,7 @@ var
   S: String40;
   V: Byte;
 begin
+  IsInstr := True;
   ClrScr;
   ResetParams;
   RenderTexts;
@@ -469,6 +471,7 @@ begin
     end;
   until (KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F2);
   Adlib.NoteOff(8);
+  IsInstr := False;
 end;
 
 var
