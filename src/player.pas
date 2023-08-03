@@ -8,7 +8,7 @@ var
   IsPlaying: Boolean = False;
 
 procedure Start(const PatternIndex: Byte = 0);
-procedure Play;    
+procedure Play;
 procedure Stop;
 
 implementation
@@ -34,6 +34,7 @@ var
   Note: TNepperNote;
   Effect: TNepperEffect;
   LastNoteList: array[0..7] of TNepperNote;
+  LastNoteFutureList: array[0..7] of TNepperNote;
   LastEffectList: array[0..7] of TNepperEffect;
   LastInstrumentList: array[0..7] of Byte;
   LastArpeggioList: array[0..7,0..1] of Byte;
@@ -47,7 +48,7 @@ begin
   CurCell := 0;
   CurSpeed := 6;
   if PatternIndex <> $FF then
-  begin        
+  begin
     CurPatternIndex := PatternIndex;
     PPattern := Formats.Patterns[PatternIndex];
     IsPatternOnly := True;
@@ -58,7 +59,7 @@ begin
     Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
     Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
   end else
-  begin             
+  begin
     CurPatternIndex := 0;
     PPattern := Formats.Patterns[NepperRec.PatternIndices[CurPatternIndex]];
     IsPatternOnly := False;
@@ -71,28 +72,45 @@ begin
     Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
   end;
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-  begin   
+  begin
     PChannel := @PPattern^[CurChannel];
     Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PChannel^.InstrumentIndex]);
     LastInstrumentList[CurChannel] := PChannel^.InstrumentIndex;
   end;
-  FillChar(LastNoteList[0], SizeOf(LastNoteList), 0);      
+  FillChar(LastNoteList[0], SizeOf(LastNoteList), 0);
   FillChar(LastEffectList[0], SizeOf(LastEffectList), 0);
   IsPlaying := True;
 end;
 
 procedure ChangeFreq(var Reg: TAdlibRegA0B8; const Channel: Byte; const Freq: Integer); inline;
 begin
+  if (Byte(LastNoteFutureList[Channel]) <> 0) and (Byte(LastNoteList[Channel]) = Byte(LastNoteFutureList[Channel])) then
+  begin
+    Exit;
+  end;
   Reg.Freq := Reg.Freq + Freq;
   if Reg.Freq >= ADLIB_FREQ_TABLE[13] then
   begin
     Reg.Freq := ADLIB_FREQ_TABLE[1];
     Reg.Octave := Reg.Octave + 1;
+    LastNoteList[Channel].Octave := Reg.Octave;
+    LastNoteList[Channel].Note := 1;
   end else
   if Reg.Freq <= ADLIB_FREQ_TABLE[1] then
   begin
     Reg.Freq := ADLIB_FREQ_TABLE[13];
     Reg.Octave := Reg.Octave - 1;
+    LastNoteList[Channel].Octave := Reg.Octave;
+    LastNoteList[Channel].Note := 13;
+  end;
+  if LastNoteList[Channel].Octave = Reg.Octave then
+  begin
+    if ((Freq < 0) and (Reg.Freq < ADLIB_FREQ_TABLE[LastNoteList[Channel].Note])) or
+       ((Freq > 0) and (Reg.Freq > ADLIB_FREQ_TABLE[LastNoteList[Channel].Note])) then
+    begin
+      Reg.Freq := ADLIB_FREQ_TABLE[LastNoteList[Channel].Note];
+      LastNoteList[Channel] := LastNoteFutureList[Channel];
+    end;
   end;
   WriteReg($A0 + Channel, Lo(Word(Reg)));
   WriteReg($B0 + Channel, Hi(Word(Reg)));
@@ -107,6 +125,15 @@ begin
 end;}
 
 procedure Play;
+  function GetEffectReady: Byte; inline;
+  begin
+    Result := Byte(Word(PCell^.Effect));
+    if Result = 0 then
+      Result := Byte(Word(LastEffectList[CurChannel]));
+    LastEffectList[CurChannel].Effect := PCell^.Effect.Effect;
+    LastEffectList[CurChannel].V1 := Result shr 4;
+    LastEffectList[CurChannel].V2 := Result;
+  end;
 begin
   // Is playing?
   if not IsPlaying then
@@ -115,7 +142,7 @@ begin
 
   // Pre Effect
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-  begin     
+  begin
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
     PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
@@ -213,7 +240,7 @@ begin
           Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PChannel^.InstrumentIndex]);
           LastInstrumentList[CurChannel] := PChannel^.InstrumentIndex;
         end;
-      end;    
+      end;
       HexStrFast2(CurPatternIndex, GS2);
       Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
       HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
@@ -222,18 +249,26 @@ begin
   end;
   // Play note
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-  begin 
+  begin
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
     PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
     // Note
-    if Byte(PCell^.Note) <> 0 then
+    if Char(PCell^.Effect.Effect) <> '3' then
     begin
-      LastNoteList[CurChannel] := PCell^.Note;
-      Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave, PInstrument^.FineTune);
-      Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
+      if Byte(PCell^.Note) <> 0 then
+      begin
+        LastNoteList[CurChannel] := PCell^.Note;
+        Byte(LastNoteFutureList[CurChannel]) := 0;
+        Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave, PInstrument^.FineTune);
+        Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
+      end else
+        Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $1F, ' ');
     end else
-      Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $1F, ' ');
+    begin
+      // Tone portamento
+      LastNoteFutureList[CurChannel] := PCell^.Note;
+    end;
   end;
   // Post Effect
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
@@ -246,19 +281,22 @@ begin
       case Char(PCell^.Effect.Effect) of
         '1': // Freq slide up
           begin
-            TmpByte := Byte(Word(PCell^.Effect));
-            if TmpByte = 0 then
-              TmpByte := Byte(Word(LastEffectList[CurChannel]));
+            TmpByte := GetEffectReady;
             ChangeFreq(FreqRegs[CurChannel], CurChannel, TmpByte);
-            LastEffectList[CurChannel] := PCell^.Effect;
           end;
         '2': // Freq slide down
-          begin  
-            TmpByte := Byte(Word(PCell^.Effect));
-            if TmpByte = 0 then
-              TmpByte := Byte(Word(LastEffectList[CurChannel]));
+          begin
+            TmpByte := GetEffectReady;
             ChangeFreq(FreqRegs[CurChannel], CurChannel, -TmpByte);
-            LastEffectList[CurChannel] := PCell^.Effect;
+          end;
+        '3': // Tone portamento
+          begin
+            TmpByte := GetEffectReady;
+            if (LastNoteList[CurChannel].Octave < LastNoteFutureList[CurChannel].Octave) or ((LastNoteList[CurChannel].Octave = LastNoteFutureList[CurChannel].Octave) and (LastNoteList[CurChannel].Note < LastNoteFutureList[CurChannel].Note)) then
+              ChangeFreq(FreqRegs[CurChannel], CurChannel, TmpByte)
+            else
+            if (LastNoteList[CurChannel].Octave > LastNoteFutureList[CurChannel].Octave) or ((LastNoteList[CurChannel].Octave = LastNoteFutureList[CurChannel].Octave) and (LastNoteList[CurChannel].Note > LastNoteFutureList[CurChannel].Note)) then
+              ChangeFreq(FreqRegs[CurChannel], CurChannel, TmpByte);
           end;
       end;
     end;
@@ -276,7 +314,7 @@ begin
   begin
     Adlib.NoteClear(I);
   end;
-  IsPlaying := False; 
+  IsPlaying := False;
   Screen.WriteText(63, 0, $1F, '', 17);
 end;
 
