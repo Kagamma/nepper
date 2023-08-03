@@ -82,7 +82,7 @@ begin
   IsPlaying := True;
 end;
 
-procedure ChangeFreq(const Channel: Byte; const Freq: Integer); inline;
+procedure ChangeFreq(const Channel: Byte; const Freq: Integer);
 var
   Reg: PAdlibRegA0B8;
 begin
@@ -102,7 +102,7 @@ begin
   WriteReg($B0 + Channel, Hi(Word(Reg^)));
 end;
 
-procedure ChangeFreqUpdate(const Channel: Byte; const Freq: Integer); inline;
+procedure ChangeFreqUpdate(const Channel: Byte; const Freq: Integer);
 var
   Reg: PAdlibRegA0B8;
 begin
