@@ -247,6 +247,17 @@ begin
             if CurTicks = 0 then
               CurSpeed := Byte(Word(PCell^.Effect));
           end;
+        'M': // Tremolo
+          begin
+            TmpByte := GetEffectReady;
+            I := SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
+            Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + I, $3F), 0);  
+            Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total) + I, $3F), 0);
+            Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total) + I, $3F), 0);
+            Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + I, $3F), 0);
+            Inc(LastNoteTimerList[CurChannel], High(LastNoteTimerList) div CurSpeed + CurSpeed * TNepperEffectValue(TmpByte).V1);
+            Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+          end;
         'N': // Tremor
           begin
             TmpByte := GetEffectReady;
@@ -313,7 +324,7 @@ begin
             Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
           end else
           begin
-            if LastInstrumentList[CurChannel] <> PCell^.InstrumentIndex then
+            //if LastInstrumentList[CurChannel] <> PCell^.InstrumentIndex then
             begin
               Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
               LastInstrumentList[CurChannel] := PCell^.InstrumentIndex;
