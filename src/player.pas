@@ -33,13 +33,25 @@ var
   OctaveByte: Byte;
   Note: TNepperNote;
   Effect: TNepperEffect;
-  LastNoteList: array[0..8] of TNepperNote;
-  LastNoteFutureList: array[0..8] of TNepperNote;
-  LastEffectList: array[0..8] of TNepperEffect;
-  LastInstrumentList: array[0..8] of Byte;
-  LastArpeggioList: array[0..8,0..1] of Byte;
+  LastNoteList: array[0..MAX_CHANNELS - 1] of TNepperNote;
+  LastNoteFutureList: array[0..MAX_CHANNELS - 1] of TNepperNote;
+  LastEffectList: array[0..MAX_CHANNELS - 1] of TNepperEffect;
+  LastInstrumentList: array[0..MAX_CHANNELS - 1] of Byte;
+  LastArpeggioList: array[0..MAX_CHANNELS - 1, 0..1] of Byte;
+  LastNoteDelay: array[0..MAX_CHANNELS - 1] of Byte;
   GS2: String2;
   ColorStatus: Byte;
+  VolumeReg: TAdlibReg4055;
+  Instruments: array[0..31] of TAdlibInstrument;
+
+procedure CleanUpStates;
+begin
+  FillChar(LastInstrumentList[0], SizeOf(LastInstrumentList), $FF);
+  FillChar(LastNoteList[0], SizeOf(LastNoteList), 0);
+  FillChar(LastEffectList[0], SizeOf(LastEffectList), 0);
+  FillChar(LastNoteDelay[0], SizeOf(LastNoteDelay), 0);
+  FillChar(VolumeModList[0], SizeOf(VolumeModList), 0);
+end;
 
 procedure Start(const PatternIndex: Byte = 0);
 begin
@@ -71,9 +83,8 @@ begin
     Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
     Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
   end;
-  FillChar(LastInstrumentList[0], SizeOf(LastInstrumentList), $FF);
-  FillChar(LastNoteList[0], SizeOf(LastNoteList), 0);
-  FillChar(LastEffectList[0], SizeOf(LastEffectList), 0);
+  CleanUpStates;
+  Move(NepperRec.Instruments[0], Instruments[0], SizeOf(Instruments));
   IsPlaying := True;
 end;
 
@@ -130,14 +141,6 @@ begin
   WriteReg($B0 + Channel, Hi(Word(Reg^)));
 end;
 
-{procedure PlayTestNote; inline;
-begin
-  if CurInstr^.PitchShift <> 0 then
-  begin
-    ChangeFreq(FreqRegs[8], 8, ShortInt(CurInstr^.PitchShift));
-  end;
-end;}
-
 procedure Play;
   function GetEffectReady: Byte; inline;
   begin
@@ -158,37 +161,66 @@ begin
   begin
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
-    PInstrument := @NepperRec.Instruments[PCell^.InstrumentIndex];
+    PInstrument := @Instruments[PCell^.InstrumentIndex];
     if Word(PCell^.Effect) <> 0 then
     begin
       case Char(PCell^.Effect.Effect) of
         '0', #0: // Arpeggio
           begin
-            if Byte(Word(PCell^.Effect)) <> 0 then
+            if (CurTicks = 0) and (Byte(Word(PCell^.Effect)) <> 0) and (Byte(PCell^.Note) <> 0) then
             begin
               LastArpeggioList[CurChannel, 0] := PCell^.Effect.V1;
               LastArpeggioList[CurChannel, 1] := PCell^.Effect.V2;
             end;
           end;
+        '9': // Volume
+          begin
+            if CurTicks = 0 then
+            begin
+              Adlib.VolumeModList[CurChannel] := 0;
+              TmpByte := 63 - Max(Min(Byte(Word(PCell^.Effect)), 63), 0);
+              Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := TmpByte;
+              Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := TmpByte;
+              Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := TmpByte;
+              Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := TmpByte;
+              Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+            end;
+          end;
+        'A': // Volume slide
+          begin
+            if CurTicks = 0 then
+            begin
+              TmpByte := GetEffectReady;
+              Inc(Adlib.VolumeModList[CurChannel], ((TmpByte shr 4) and $F) - (TmpByte and $F));
+              Adlib.VolumeModList[CurChannel] := Max(Min(Adlib.VolumeModList[CurChannel], 63), -63);
+              Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+            end;
+          end;
         'B': // BPM
           begin
-            InstallTimer(Byte(Word(PCell^.Effect)));
+            if CurTicks = 0 then
+              InstallTimer(Byte(Word(PCell^.Effect)));
+          end;
+        'D': // Pattern break
+          begin
+            if CurTicks = 0 then
+              CurCell := $40;
           end;
         'E': // Speed
           begin
-            CurSpeed := Byte(Word(PCell^.Effect));
+            if CurTicks = 0 then
+              CurSpeed := Byte(Word(PCell^.Effect));
           end;
         'F': // Functions
           begin
             case Byte(Word(PCell^.Effect)) of
               0: // Stop / Start release phase
                 begin
-                  Adlib.NoteOff(CurChannel);
-                  Word(LastEffectList[CurChannel]) := 0;
-                end;
-              1: // Jump to next pattern
-                begin
-                  CurCell := $40;
+                  if CurTicks = 0 then
+                  begin
+                    Adlib.NoteOff(CurChannel);
+                    Word(LastEffectList[CurChannel]) := 0;
+                  end;
                 end;
             end;
           end;
@@ -212,13 +244,13 @@ begin
     end
   end;
   // Play note
-  if CurTicks = 0 then
-  begin
-    for CurChannel := 0 to NepperRec.ChannelCount - 1 do
+  for CurChannel := 0 to NepperRec.ChannelCount - 1 do
+  begin  
+    if CurTicks = LastNoteDelay[CurChannel] then
     begin
       PChannel := @PPattern^[CurChannel];
       PCell := @PChannel^.Cells[CurCell];
-      PInstrument := @NepperRec.Instruments[PCell^.InstrumentIndex];
+      PInstrument := @Instruments[PCell^.InstrumentIndex];
       // Note
       if Byte(PCell^.Note) <> 0 then
       begin
@@ -226,12 +258,13 @@ begin
         begin
           if IsInstr then
           begin
-            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PCell^.InstrumentIndex]);
+            Instruments[PCell^.InstrumentIndex] := NepperRec.Instruments[PCell^.InstrumentIndex];
+            Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
           end else
           begin
             if LastInstrumentList[CurChannel] <> PCell^.InstrumentIndex then
             begin
-              Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PCell^.InstrumentIndex]);
+              Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
               LastInstrumentList[CurChannel] := PCell^.InstrumentIndex;
             end;
           end;
@@ -247,7 +280,10 @@ begin
       end else
         Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $1F, ' ');
     end;
-    //
+  end;
+  //
+  if CurTicks = 0 then
+  begin
     HexStrFast2(CurCell, GS2);
     Screen.WriteTextFast2(ScreenPointer + 78, ColorStatus, GS2);
   end;
@@ -256,7 +292,7 @@ begin
   begin
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
-    PInstrument := @NepperRec.Instruments[PCell^.InstrumentIndex];
+    PInstrument := @Instruments[PCell^.InstrumentIndex];
     if Word(PCell^.Effect) <> 0 then
     begin
       case Char(PCell^.Effect.Effect) of
@@ -332,6 +368,7 @@ begin
     Adlib.NoteClear(I);
   end;
   IsPlaying := False;
+  CleanUpStates;
   Screen.WriteText(63, 0, $1F, '', 17);
 end;
 

@@ -23,6 +23,8 @@ procedure HexStrFast3(const V: Word; out S: String3); overload;
 function HexStrFast2(const V: Byte): String2; overload;
 function HexStrFast3(const V: Word): String3; overload;
 function FindCharPos(const S: String; const C: Char): Byte;
+function Min(const V1, V2: Integer): Integer; inline;
+function Max(const V1, V2: Integer): Integer; inline;
 
 implementation
 
@@ -87,6 +89,22 @@ begin
     if S[I] = C then
       Exit(I);
   Result := 0;
+end;
+      
+function Min(const V1, V2: Integer): Integer; inline;
+begin
+  if V1 < V2 then
+    Result := V1
+  else
+    Result := V2;
+end;
+
+function Max(const V1, V2: Integer): Integer; inline;
+begin
+  if V1 > V2 then
+    Result := V1
+  else
+    Result := V2;
 end;
 
 end.

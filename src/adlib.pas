@@ -10,6 +10,7 @@ const
   ADLIB_MODULATOR = 0;
   ADLIB_CARRIER = 1;
   ADLIB_MAX_OCTAVE = 8;
+  MAX_CHANNELS = 9;
 
   ADLIB_SLOTS: array[0..8, 0..1] of Byte = (
     ($00, $03),
@@ -124,8 +125,9 @@ type
   end;
 
 var
-  FreqRegs: array[0..8] of TAdlibRegA0B8;
-  FreqPrecisionList: array[0..8] of DWord;
+  VolumeModList: array[0..MAX_CHANNELS - 1] of ShortInt;
+  FreqRegs: array[0..MAX_CHANNELS - 1] of TAdlibRegA0B8;
+  FreqPrecisionList: array[0..MAX_CHANNELS - 1] of DWord;
 
 function Check: Boolean;
 procedure Init;
@@ -165,12 +167,23 @@ procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);
 var
   I: Byte;
   Params: PAdlibInstrumentOperator;
+  Volume: TAdlibReg4055;
+  VolumeTmp: ShortInt;
 begin
   for I := 0 to 1 do
   begin
     Params := @Inst^.Operators[I];
+    Volume := Params^.Volume;
+    VolumeTmp := Volume.Total - VolumeModList[Channel];
+    if VolumeTmp < 0 then
+      VolumeTmp := 0
+    else
+    if VolumeTmp > $3F then
+      VolumeTmp := $3F;
+    Volume.Total := VolumeTmp;
+
     WriteReg(ADLIB_SLOTS[Channel, I] + $20, Byte(Params^.Effect));
-    WriteReg(ADLIB_SLOTS[Channel, I] + $40, Byte(Params^.Volume));
+    WriteReg(ADLIB_SLOTS[Channel, I] + $40, Byte(Volume));
     WriteReg(ADLIB_SLOTS[Channel, I] + $60, Byte(Params^.AttackDecay));
     WriteReg(ADLIB_SLOTS[Channel, I] + $80, Byte(Params^.SustainRelease));
     WriteReg(ADLIB_SLOTS[Channel, I] + $E0, Byte(Params^.Waveform));
@@ -257,6 +270,9 @@ begin
   Inc(FreqPrecisionList[Channel], (Freq shl 8) div Ticks);
   FreqRegs[Channel].Freq := FreqPrecisionList[Channel] shr 8;
 end;
+
+initialization
+  FillChar(VolumeModList[0], SizeOf(VolumeModList), 0);
 
 end.
 

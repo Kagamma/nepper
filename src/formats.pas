@@ -13,7 +13,6 @@ const
   SONG_VERSION = 1;
   SONG_HALT = $FF;
   SONG_REPEAT = $FE;
-  MAX_CHANNELS = 9;
 
 type
   TNepperNote = bitpacked record

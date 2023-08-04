@@ -126,8 +126,8 @@ begin
         WriteTextFast1(PW + 2, COLOR_LABEL, Char(PC^[I].Note.Octave + Byte('0')));
       end;
       B := PC^[I].InstrumentIndex;
-      GS2[1] := BASE16_CHARS[Byte(W shr 4)];
-      GS2[2] := BASE16_CHARS[Byte(W)];
+      GS2[1] := BASE16_CHARS[B shr 4];
+      GS2[2] := BASE16_CHARS[B];
       WriteTextFast2(PW + 3, 07, GS2);
       W := Word(PC^[I].Effect);
       GS3[1] := Char(W shr 8);
@@ -169,8 +169,8 @@ begin
       WriteTextFast1(PW + 2, COLOR_LABEL, Char(PC^[I].Note.Octave + Byte('0')));
     end;
     B := PC^[I].InstrumentIndex;
-    GS2[1] := BASE16_CHARS[Byte(W shr 4)];
-    GS2[2] := BASE16_CHARS[Byte(W)];
+    GS2[1] := BASE16_CHARS[B shr 4];
+    GS2[2] := BASE16_CHARS[B];
     WriteTextFast2(PW + 3, 07, GS2);
     W := Word(PC^[I].Effect);
     GS3[1] := Char(W shr 8);
