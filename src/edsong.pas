@@ -93,10 +93,11 @@ procedure LoopEditSheet;
       Dec(PatternIndex, Step);
       if PatternIndex < PatternAnchor then
       begin
-        Dec(PatternAnchor, Step);
+        PatternAnchor := PatternIndex;
         RenderSongInfoFast;
-      end;
-      Screen.SetCursorPosition(10 + (PatternIndex - PatternAnchor) * 3, 7);
+        Screen.SetCursorPosition(10, 7);
+      end else
+        Screen.SetCursorPosition(10 + (PatternIndex - PatternAnchor) * 3, 7);
       Input.InputCursor := 1;
     end;
   end;
@@ -110,10 +111,11 @@ procedure LoopEditSheet;
       Inc(PatternIndex, Step);
       if PatternIndex > PatternAnchor + $F then
       begin
-        Inc(PatternAnchor, Step);
-        RenderSongInfoFast;
-      end;
-      Screen.SetCursorPosition(10 + (PatternIndex - PatternAnchor) * 3, 7);
+        PatternAnchor := PatternIndex - $F;
+        RenderSongInfoFast;         
+        Screen.SetCursorPosition(10 + 15 * 3, 7);
+      end else
+        Screen.SetCursorPosition(10 + (PatternIndex - PatternAnchor) * 3, 7);
       Input.InputCursor := 1;
     end;
   end;
@@ -197,6 +199,14 @@ begin
       SCAN_DEL:
         begin
           Delete;
+        end;
+      SCAN_HOME:
+        begin
+          MoveLeft($FF);
+        end;
+      SCAN_END:
+        begin
+          MoveRight($FF);
         end;
       SCAN_SPACE:
         begin
