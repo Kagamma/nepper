@@ -20,6 +20,11 @@ type
     Octave: TBit4;
   end;
 
+  TNepperEffectValue = bitpacked record
+    V2: TBit4;
+    V1: TBit4;
+  end;
+
   TNepperEffect = bitpacked record
     V2: TBit4;
     V1: TBit4;

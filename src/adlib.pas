@@ -127,6 +127,7 @@ type
 var
   VolumeModList: array[0..MAX_CHANNELS - 1] of ShortInt;
   FreqRegs: array[0..MAX_CHANNELS - 1] of TAdlibRegA0B8;
+  FreqRegsBack: array[0..MAX_CHANNELS - 1] of TAdlibRegA0B8;
   FreqPrecisionList: array[0..MAX_CHANNELS - 1] of DWord;
 
 function Check: Boolean;
@@ -242,6 +243,7 @@ begin
   FreqPrecisionList[Channel] := DWord(N^.Freq) shl 8;
   WriteReg($A0 + Channel, Lo(Word(N^)));
   WriteReg($B0 + Channel, Hi(Word(N^)));
+  FreqRegsBack[Channel] := N^;
 end;
 
 procedure NoteOff(const Channel: Byte);
