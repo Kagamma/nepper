@@ -36,6 +36,7 @@ var
   CurCellPart: Byte = 0;
   CurOctave: Byte = 4;
   CurStep: Byte = 1;
+  CurInstrIndex: Byte = 0;
   IsEditMode: Boolean = True;
   GS2: String2;
   GS3: String3;
@@ -83,9 +84,9 @@ var
   PC: PNepperChannel;
 begin
   PC := @CurPattern^[CurChannel];
-  HexStrFast2(PC^.InstrumentIndex, S);
+  HexStrFast2(CurInstrIndex, S);
   WriteText(33, 9, $F, S, 2);
-  WriteText(36, 9, $F, NepperRec.Instruments[PC^.InstrumentIndex].Name, 20);
+  WriteText(36, 9, $F, NepperRec.Instruments[CurInstrIndex].Name, 20);
 end;
 
 procedure RenderStep; inline;
@@ -98,6 +99,7 @@ procedure RenderPatternInfo;
 var
   I, J: ShortInt;
   W: Word;
+  B: Byte;
   PW: PWord;
   PC: PNepperChannelCells;
 begin
@@ -123,13 +125,17 @@ begin
         WriteTextFast2(PW, COLOR_LABEL, ADLIB_NOTESYM_TABLE[PC^[I].Note.Note]);
         WriteTextFast1(PW + 2, COLOR_LABEL, Char(PC^[I].Note.Octave + Byte('0')));
       end;
+      B := PC^[I].InstrumentIndex;
+      GS2[1] := BASE16_CHARS[Byte(W shr 4)];
+      GS2[2] := BASE16_CHARS[Byte(W)];
+      WriteTextFast2(PW + 3, 07, GS2);
       W := Word(PC^[I].Effect);
       GS3[1] := Char(W shr 8);
       if Byte(GS3[1]) = 0 then
         GS3[1] := '0';
       GS3[2] := BASE16_CHARS[Byte(W shr 4) and $F];
       GS3[3] := BASE16_CHARS[Byte(W) and $F];
-      WriteTextFast3(PW + 3, $0F, GS3);
+      WriteTextFast3(PW + 5, $0F, GS3);
       PW := PW + 80;
     end;
   end;
@@ -146,6 +152,7 @@ procedure RenderPatternInfoOneChannel(const Channel: Byte);
 var
   I, J: ShortInt;
   W: Word;
+  B: Byte;
   PW: PWord;
   PC: PNepperChannelCells;
 begin
@@ -161,13 +168,17 @@ begin
       WriteTextFast2(PW, COLOR_LABEL, ADLIB_NOTESYM_TABLE[PC^[I].Note.Note]);
       WriteTextFast1(PW + 2, COLOR_LABEL, Char(PC^[I].Note.Octave + Byte('0')));
     end;
+    B := PC^[I].InstrumentIndex;
+    GS2[1] := BASE16_CHARS[Byte(W shr 4)];
+    GS2[2] := BASE16_CHARS[Byte(W)];
+    WriteTextFast2(PW + 3, 07, GS2);
     W := Word(PC^[I].Effect);
     GS3[1] := Char(W shr 8);
     if Byte(GS3[1]) = 0 then
       GS3[1] := '0';
     GS3[2] := BASE16_CHARS[Byte(W shr 4) and $F];
     GS3[3] := BASE16_CHARS[Byte(W) and $F];
-    WriteTextFast3(PW + 3, $0F, GS3);
+    WriteTextFast3(PW + 5, $0F, GS3);
     PW := PW + 80;
   end;
   PW := ScreenPointer + 80 * PATTERN_SCREEN_START_Y;
@@ -253,7 +264,7 @@ var
   begin
     if (Note <> 0) or (Octave <> 0) then
     begin
-      Adlib.SetInstrument(8, @NepperRec.Instruments[PC^.InstrumentIndex]);
+      Adlib.SetInstrument(8, @NepperRec.Instruments[CurInstrIndex]);
       AdLib.NoteClear(8);
       Adlib.NoteOn(8, Note, Octave);
     end;
@@ -261,13 +272,17 @@ var
     begin
       PC^.Cells[CurCell].Note.Note := Note;
       PC^.Cells[CurCell].Note.Octave := Octave;
+      PC^.Cells[CurCell].InstrumentIndex := CurInstrIndex;
       if (Note = 0) and (Octave = 0) then
       begin
         WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, '---', 3);
+        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 3), PATTERN_SCREEN_START_Y + CurCell - Anchor, $0F, '00', 3);
       end else
       begin
         WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, ADLIB_NOTESYM_TABLE[Note], 2);
         WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + 2, PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, Char(Octave + Byte('0')), 1);
+        HexStrFast2(CurInstrIndex, GS2);
+        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + 3, PATTERN_SCREEN_START_Y + CurCell - Anchor, $07, GS2, 2);
         MoveDown(CurStep);
       end;
     end;
@@ -426,7 +441,7 @@ begin
     if IsEditMode then
     begin
       Word(PC^.Cells[CurCell].Effect) := W;
-      WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 3), PATTERN_SCREEN_START_Y + CurCell - Anchor, $0F, S, 3);
+      WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor, $0F, S, 3);
       if KBInput.ScanCode = $FF then
       begin 
         if Input.InputCursor <> OldInputCursor then
@@ -455,13 +470,13 @@ begin
               CurCellPart := 1;
               Input.InputCursor := 3;
               Dec(CurChannel);
-              Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 3)+ (Input.InputCursor - 1), PATTERN_SCREEN_START_Y + CurCell - Anchor);
+              Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5)+ (Input.InputCursor - 1), PATTERN_SCREEN_START_Y + CurCell - Anchor);
               RenderInstrument;
             end;
           end else
           begin
             CurCellPart := 0;
-            Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 3), PATTERN_SCREEN_START_Y + CurCell - Anchor);
+            Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor);
           end;
         end;
       SCAN_RIGHT:
@@ -479,7 +494,7 @@ begin
           begin
             CurCellPart := 1;
           end;
-          Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 3), PATTERN_SCREEN_START_Y + CurCell - Anchor);
+          Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor);
         end;
       SCAN_DOWN:
         begin
@@ -491,11 +506,19 @@ begin
         end;
       SCAN_PGDN:
         begin
-          MoveDown(4);
+          MoveDown(8);
         end;
       SCAN_PGUP:
         begin
-          MoveUp(4);
+          MoveUp(8);
+        end;
+      SCAN_HOME:
+        begin
+          MoveUp($3F);
+        end;   
+      SCAN_END:
+        begin
+          MoveDown($3F);
         end;
       SCAN_SPACE:
         begin
@@ -581,21 +604,21 @@ begin
         end;
       '<':
         begin
-          if PC^.InstrumentIndex > 0 then
+          if CurInstrIndex > 0 then
           begin
-            Dec(PC^.InstrumentIndex);
+            Dec(CurInstrIndex);
             RenderInstrument;
-            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PC^.InstrumentIndex]);
+            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[CurInstrIndex]);
           end;     
           Result := True;
         end;
       '>':
         begin
-          if PC^.InstrumentIndex < 31 then
+          if CurInstrIndex < 31 then
           begin
-            Inc(PC^.InstrumentIndex);
+            Inc(CurInstrIndex);
             RenderInstrument;
-            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PC^.InstrumentIndex]);
+            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[CurInstrIndex]);
           end; 
           Result := True;
         end;

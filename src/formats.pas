@@ -31,6 +31,7 @@ type
   TNepperChannelCell = packed record
     Note  : TNepperNote;
     Effect: TNepperEffect;
+    InstrumentIndex: Byte;
   end;
 
   PNepperChannelCells = ^TNepperChannelCells;
@@ -38,7 +39,6 @@ type
 
   PNepperChannel = ^TNepperChannel;
   TNepperChannel = packed record
-    InstrumentIndex: Byte;
     Cells: TNepperChannelCells;
   end;
 
@@ -156,7 +156,7 @@ begin
       begin                                                        
         BlockWrite(F, I, 1);
         BlockWrite(F, J, 1);
-        BlockWrite(F, Formats.Patterns[I]^[J].InstrumentIndex, SizeOf(TNepperChannelCells));
+        BlockWrite(F, Formats.Patterns[I]^[J].Cells[0], SizeOf(TNepperChannelCells));
       end;
     end;
   end;
@@ -198,7 +198,7 @@ begin
     begin
       BlockRead(F, I, 1);
       BlockRead(F, J, 1);
-      BlockRead(F, Formats.Patterns[I]^[J].InstrumentIndex, SizeOf(TNepperChannelCells));
+      BlockRead(F, Formats.Patterns[I]^[J].Cells[0], SizeOf(TNepperChannelCells));
     end;
     Close(F);
     Result := True;

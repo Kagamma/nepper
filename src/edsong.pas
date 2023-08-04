@@ -184,11 +184,11 @@ begin
         end;
       SCAN_PGUP:
         begin
-          MoveLeft(4);
+          MoveLeft(8);
         end;
       SCAN_PGDN:
         begin
-          MoveRight(4);
+          MoveRight(8);
         end;
       SCAN_INS:
         begin

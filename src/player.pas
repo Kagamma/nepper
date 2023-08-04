@@ -71,12 +71,7 @@ begin
     Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
     Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
   end;
-  for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-  begin
-    PChannel := @PPattern^[CurChannel];
-    Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PChannel^.InstrumentIndex]);
-    LastInstrumentList[CurChannel] := PChannel^.InstrumentIndex;
-  end;
+  FillChar(LastInstrumentList[0], SizeOf(LastInstrumentList), $FF);
   FillChar(LastNoteList[0], SizeOf(LastNoteList), 0);
   FillChar(LastEffectList[0], SizeOf(LastEffectList), 0);
   IsPlaying := True;
@@ -163,7 +158,7 @@ begin
   begin
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
-    PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
+    PInstrument := @NepperRec.Instruments[PCell^.InstrumentIndex];
     if Word(PCell^.Effect) <> 0 then
     begin
       case Char(PCell^.Effect.Effect) of
@@ -223,7 +218,7 @@ begin
     begin
       PChannel := @PPattern^[CurChannel];
       PCell := @PChannel^.Cells[CurCell];
-      PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
+      PInstrument := @NepperRec.Instruments[PCell^.InstrumentIndex];
       // Note
       if Byte(PCell^.Note) <> 0 then
       begin
@@ -231,12 +226,19 @@ begin
         begin
           if IsInstr then
           begin
-            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PChannel^.InstrumentIndex]);
+            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PCell^.InstrumentIndex]);
+          end else
+          begin
+            if LastInstrumentList[CurChannel] <> PCell^.InstrumentIndex then
+            begin
+              Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PCell^.InstrumentIndex]);
+              LastInstrumentList[CurChannel] := PCell^.InstrumentIndex;
+            end;
           end;
           LastNoteList[CurChannel] := PCell^.Note;
           Byte(LastNoteFutureList[CurChannel]) := 0;
           Adlib.NoteOn(CurChannel, PCell^.Note.Note, PCell^.Note.Octave, PInstrument^.FineTune);
-          Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $10 + PCell^.Note.Note + 1, #4); ;
+          Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $10 + PCell^.Note.Note + 1, #4);
         end else
         begin
           // Tone portamento
@@ -254,7 +256,7 @@ begin
   begin
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
-    PInstrument := @NepperRec.Instruments[PChannel^.InstrumentIndex];
+    PInstrument := @NepperRec.Instruments[PCell^.InstrumentIndex];
     if Word(PCell^.Effect) <> 0 then
     begin
       case Char(PCell^.Effect.Effect) of
@@ -313,15 +315,6 @@ begin
             end;
         end;
         PPattern := Formats.Patterns[NepperRec.PatternIndices[CurPatternIndex]];
-        for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-        begin
-          if LastInstrumentList[CurChannel] <> PChannel^.InstrumentIndex then
-          begin
-            PChannel := @PPattern^[CurChannel];
-            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[PChannel^.InstrumentIndex]);
-            LastInstrumentList[CurChannel] := PChannel^.InstrumentIndex;
-          end;
-        end;
         HexStrFast2(CurPatternIndex, GS2);
         Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
         HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
