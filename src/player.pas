@@ -25,7 +25,7 @@ const
   );
 
 var
-  I, J, K: Byte;
+  I: Byte;
   CurPatternIndex: Byte;
   PInstrument: PAdlibInstrument;
   PPattern: PNepperPattern;
@@ -39,8 +39,6 @@ var
   TmpByte: Byte;
   NoteByte: Byte;
   OctaveByte: Byte;
-  Note: TNepperNote;
-  Effect: TNepperEffect;
   LastNoteList: array[0..MAX_CHANNELS - 1] of TNepperNote;
   LastNoteFutureList: array[0..MAX_CHANNELS - 1] of TNepperNote;
   LastEffectList: array[0..MAX_CHANNELS - 1] of TNepperEffect;
@@ -50,7 +48,6 @@ var
   LastNoteTimerList: array[0..MAX_CHANNELS - 1] of Word;
   GS2: String2;
   ColorStatus: Byte;
-  VolumeReg: TAdlibReg4055;
   Instruments: array[0..31] of TAdlibInstrument;
 
 procedure CleanUpStates;
@@ -114,8 +111,7 @@ begin
     SetRegFreq(Channel, ADLIB_FREQ_TABLE[13]);
     Reg^.Octave := Reg^.Octave - 1;
   end;
-  WriteReg($A0 + Channel, Lo(Word(Reg^)));
-  WriteReg($B0 + Channel, Hi(Word(Reg^)));
+  WriteNoteReg(Channel, Reg);
 end;
 
 procedure SlideFreq(const Channel: Byte; const Freq: Integer);
@@ -134,8 +130,7 @@ begin
     SetRegFreq(Channel, ADLIB_FREQ_TABLE[13]);
     Reg^.Octave := Reg^.Octave - 1;
   end;
-  WriteReg($A0 + Channel, Lo(Word(Reg^)));
-  WriteReg($B0 + Channel, Hi(Word(Reg^)));
+  WriteNoteReg(Channel, Reg);
 end;
 
 procedure SlideFreqUpdate(const Channel: Byte; const Freq: Integer);
@@ -167,8 +162,7 @@ begin
       LastNoteList[Channel] := LastNoteFutureList[Channel];
     end;
   end;
-  WriteReg($A0 + Channel, Lo(Word(Reg^)));
-  WriteReg($B0 + Channel, Hi(Word(Reg^)));
+  WriteNoteReg(Channel, Reg);
 end;
 
 procedure Play;

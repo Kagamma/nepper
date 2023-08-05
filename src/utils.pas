@@ -17,7 +17,8 @@ type
   String80 = String[80];
 
 function HexToInt(const S: String): Word;
-function ByteToYesNo(const B: Byte): String;
+function ByteToYesNo(const B: Byte): String3;
+function ByteToPanning(const B: Byte): Char;
 procedure HexStrFast2(const V: Byte; out S: String2); overload;
 procedure HexStrFast3(const V: Word; out S: String3); overload;
 function HexStrFast2(const V: Byte): String2; overload;
@@ -43,12 +44,26 @@ begin
   end;
 end;
 
-function ByteToYesNo(const B: Byte): String;
+function ByteToYesNo(const B: Byte): String3;
 begin
   if B = 0 then
     Result := 'No'
   else
     Result := 'Yes';
+end;
+
+function ByteToPanning(const B: Byte): Char;
+begin
+  case B of
+    0:
+      Result := 'E';
+    1:
+      Result := 'L';
+    2:
+      Result := 'R';
+    3:
+      Result := 'C';
+  end;
 end;
 
 procedure HexStrFast2(const V: Byte; out S: String2);

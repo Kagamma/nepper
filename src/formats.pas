@@ -205,6 +205,7 @@ begin
       BlockRead(F, Formats.Patterns[I]^[J].Cells[0], SizeOf(TNepperChannelCells));
     end;
     Close(F);
+    Adlib.SetOPL3(Byte(NepperRec.IsOPL3));
     Result := True;
   end;
 end;
@@ -219,6 +220,8 @@ initialization
     New(Formats.Patterns[I]);
     FillChar(Formats.Patterns[I]^[0], SizeOf(TNepperPattern), 0);
   end;
+  for I := 0 to High(NepperRec.Instruments) do
+    NepperRec.Instruments[I].AlgFeedback.Panning := 3;
   NepperRec.ChannelCount := 8;
 
 finalization

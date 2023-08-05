@@ -7,11 +7,6 @@ uses
   Dialogs, EdPattern, EdSong;
 
 begin
-  if not Adlib.Check then
-  begin
-    Writeln('ERROR: AdLib sound card not found!');
-    Halt;
-  end;
   Adlib.Init;
 
   KBInput.ScanCode := SCAN_F2;

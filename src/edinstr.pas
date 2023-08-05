@@ -23,6 +23,7 @@ const
   OP1_X = 16;
   OP2_X = 36;
   OP3_X = 56;
+  OP4_X = 76;
 
 type
   TEdInstrMenuItem = record
@@ -33,7 +34,7 @@ var
   CurMenuPos: Byte = 1;
   CurInstrPos: Byte = 0;
   TestNote: TNepperNote;
-  MenuList: array[0..28] of TEdInstrMenuItem;
+  MenuList: array[0..53] of TEdInstrMenuItem;
 
 procedure ResetParams;
 begin                           
@@ -80,6 +81,34 @@ begin
   WriteTextBack(OP2_X, 18, COLOR_LABEL, 'Volume Vibrator:');
 
   WriteTextBack(OP3_X, 4, COLOR_LABEL, 'Fine Tune:');
+  WriteTextBack(OP3_X + 2, 6, $4E, '     Operator 3    ');
+  WriteTextBack(OP3_X, 7,  COLOR_LABEL, 'Attack:');
+  WriteTextBack(OP3_X, 8,  COLOR_LABEL, 'Decay:');
+  WriteTextBack(OP3_X, 9,  COLOR_LABEL, 'Sustain:');
+  WriteTextBack(OP3_X, 10, COLOR_LABEL, 'Release:');
+  WriteTextBack(OP3_X, 11, COLOR_LABEL, 'Volume:');
+  WriteTextBack(OP3_X, 12, COLOR_LABEL, 'Level scale:');
+  WriteTextBack(OP3_X, 13, COLOR_LABEL, 'Multiplier:');
+  WriteTextBack(OP3_X, 14, COLOR_LABEL, 'Waveform:');
+  WriteTextBack(OP3_X, 15, COLOR_LABEL, 'Sustain Sound:');
+  WriteTextBack(OP3_X, 16, COLOR_LABEL, 'Scale Envelope:');
+  WriteTextBack(OP3_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
+  WriteTextBack(OP3_X, 18, COLOR_LABEL, 'Volume Vibrator:');
+                  
+  WriteTextBack(OP4_X, 4, COLOR_LABEL, 'Panning:');
+  WriteTextBack(OP4_X + 2, 6, $4E, '     Operator 4    ');
+  WriteTextBack(OP4_X, 7,  COLOR_LABEL, 'Attack:');
+  WriteTextBack(OP4_X, 8,  COLOR_LABEL, 'Decay:');
+  WriteTextBack(OP4_X, 9,  COLOR_LABEL, 'Sustain:');
+  WriteTextBack(OP4_X, 10, COLOR_LABEL, 'Release:');
+  WriteTextBack(OP4_X, 11, COLOR_LABEL, 'Volume:');
+  WriteTextBack(OP4_X, 12, COLOR_LABEL, 'Level scale:');
+  WriteTextBack(OP4_X, 13, COLOR_LABEL, 'Multiplier:');
+  WriteTextBack(OP4_X, 14, COLOR_LABEL, 'Waveform:');
+  WriteTextBack(OP4_X, 15, COLOR_LABEL, 'Sustain Sound:');
+  WriteTextBack(OP4_X, 16, COLOR_LABEL, 'Scale Envelope:');
+  WriteTextBack(OP4_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
+  WriteTextBack(OP4_X, 18, COLOR_LABEL, 'Volume Vibrator:');
 
   WriteTextBack(76, 22, COLOR_LABEL, 'Test tone:');
   WriteText(0, 23, $0A, '[L] Load [<] Prev [SPC] Test  [+] Test Tone Up');
@@ -96,8 +125,9 @@ begin
   WriteText(OP1_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Alg));
   WriteText(OP2_X + 1, 3, $0F, CurInstr^.Name, 20);
   WriteText(OP2_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Feedback));
-  WriteText(OP3_X + 1, 4, $0F, HexStrFast2(CurInstr^.FineTune));
-  for I := 0 to 1 do
+  WriteText(OP3_X + 1, 4, $0F, HexStrFast2(CurInstr^.FineTune));              
+  WriteText(OP4_X + 1, 4, $0F, ByteToPanning(CurInstr^.AlgFeedback.Panning));
+  for I := 0 to 3 do
   begin
     Ofs := I * ((OP2_X + 2) - (OP1_X + 2));
     WriteText((OP1_X + 1) + Ofs, 7, $0F, HexStrFast2(CurInstr^.Operators[I].AttackDecay.Attack));
@@ -185,7 +215,7 @@ begin
       9:
         begin   
           V := CurInstr^.Operators[0].Waveform.Waveform;
-          Input.InputHex2(S, V, $3);
+          Input.InputHex2(S, V, $7);
           CurInstr^.Operators[0].Waveform.Waveform := V;
         end;
       10:
@@ -270,7 +300,7 @@ begin
       23:
         begin            
           V := CurInstr^.Operators[1].Waveform.Waveform;
-          Input.InputHex2(S, V, $3);
+          Input.InputHex2(S, V, $7);
           CurInstr^.Operators[1].Waveform.Waveform := V;
         end;
       24:
@@ -304,21 +334,184 @@ begin
           Input.InputHex2(S, V, $FF);
           CurInstr^.FineTune := ShortInt(V);
         end;
+      //
+      29:
+        begin
+          V := CurInstr^.Operators[2].AttackDecay.Attack;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[2].AttackDecay.Attack := V;
+        end;
+      30:
+        begin
+          V := CurInstr^.Operators[2].AttackDecay.Decay;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[2].AttackDecay.Decay := V;
+        end;
+      31:
+        begin
+          V := $F - CurInstr^.Operators[2].SustainRelease.Sustain;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[2].SustainRelease.Sustain := $F - V;
+        end;
+      32:
+        begin
+          V := CurInstr^.Operators[2].SustainRelease.Release;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[2].SustainRelease.Release := V;
+        end;
+      33:
+        begin
+          V := $3F - CurInstr^.Operators[2].Volume.Total;
+          Input.InputHex2(S, V, $3F);
+          CurInstr^.Operators[2].Volume.Total := $3F - V;
+        end;
+      34:
+        begin
+          V := CurInstr^.Operators[2].Volume.Scaling;
+          Input.InputHex2(S, V, 3);
+          CurInstr^.Operators[2].Volume.Scaling := V;
+        end;
+      35:
+        begin
+          V := CurInstr^.Operators[2].Effect.ModFreqMult;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[2].Effect.ModFreqMult := V;
+        end;
+      36:
+        begin
+          V := CurInstr^.Operators[2].Waveform.Waveform;
+          Input.InputHex2(S, V, $7);
+          CurInstr^.Operators[2].Waveform.Waveform := V;
+        end;
+      37:
+        begin
+          V := CurInstr^.Operators[2].Effect.EGTyp;
+          Input.InputYesNo(S, V);
+          CurInstr^.Operators[2].Effect.EGTyp := V;
+        end;
+      38:
+        begin
+          V := CurInstr^.Operators[2].Effect.KSR;
+          Input.InputYesNo(S, V);
+          CurInstr^.Operators[2].Effect.KSR := V;
+        end;
+      39:
+        begin
+          V := CurInstr^.Operators[2].Effect.Vib;
+          Input.InputYesNo(S, V);
+          CurInstr^.Operators[2].Effect.Vib := V;
+        end;
+      40:
+        begin
+          V := CurInstr^.Operators[2].Effect.AmpMod;
+          Input.InputYesNo(S, V);
+          CurInstr^.Operators[2].Effect.AmpMod := V;
+        end;
+      //
+      41:
+        begin
+          V := Byte(CurInstr^.AlgFeedback.Panning);
+          Input.InputPanning(S, V);
+          CurInstr^.AlgFeedback.Panning := V;
+        end;
+      //
+      42:
+        begin
+          V := CurInstr^.Operators[3].AttackDecay.Attack;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[3].AttackDecay.Attack := V;
+        end;
+      43:
+        begin
+          V := CurInstr^.Operators[3].AttackDecay.Decay;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[3].AttackDecay.Decay := V;
+        end;
+      44:
+        begin
+          V := $F - CurInstr^.Operators[3].SustainRelease.Sustain;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[3].SustainRelease.Sustain := $F - V;
+        end;
+      45:
+        begin
+          V := CurInstr^.Operators[3].SustainRelease.Release;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[3].SustainRelease.Release := V;
+        end;
+      46:
+        begin
+          V := $3F - CurInstr^.Operators[3].Volume.Total;
+          Input.InputHex2(S, V, $3F);
+          CurInstr^.Operators[3].Volume.Total := $3F - V;
+        end;
+      47:
+        begin
+          V := CurInstr^.Operators[3].Volume.Scaling;
+          Input.InputHex2(S, V, 3);
+          CurInstr^.Operators[3].Volume.Scaling := V;
+        end;
+      48:
+        begin
+          V := CurInstr^.Operators[3].Effect.ModFreqMult;
+          Input.InputHex2(S, V, $F);
+          CurInstr^.Operators[3].Effect.ModFreqMult := V;
+        end;
+      49:
+        begin
+          V := CurInstr^.Operators[3].Waveform.Waveform;
+          Input.InputHex2(S, V, $7);
+          CurInstr^.Operators[3].Waveform.Waveform := V;
+        end;
+      50:
+        begin
+          V := CurInstr^.Operators[3].Effect.EGTyp;
+          Input.InputYesNo(S, V);
+          CurInstr^.Operators[3].Effect.EGTyp := V;
+        end;
+      51:
+        begin
+          V := CurInstr^.Operators[3].Effect.KSR;
+          Input.InputYesNo(S, V);
+          CurInstr^.Operators[3].Effect.KSR := V;
+        end;
+      52:
+        begin
+          V := CurInstr^.Operators[3].Effect.Vib;
+          Input.InputYesNo(S, V);
+          CurInstr^.Operators[3].Effect.Vib := V;
+        end;
+      53:
+        begin
+          V := CurInstr^.Operators[3].Effect.AmpMod;
+          Input.InputYesNo(S, V);
+          CurInstr^.Operators[3].Effect.AmpMod := V;
+        end;
     end;
 
     if KBInput.ScanCode < $FE then
       case KBInput.ScanCode of
         SCAN_LEFT:
           begin
-            if (CurMenuPos >= 14) and (CurMenuPos <= 27) then
-            begin                 
-              Input.InputCursor := 2;
-              Dec(CurMenuPos, 14);
-            end else
             if CurMenuPos = 28 then
             begin
               Input.InputCursor := 2;
               CurMenuPos := 15;
+            end else
+            if CurMenuPos = 41 then
+            begin
+              Input.InputCursor := 2;
+              CurMenuPos := 28;
+            end else
+            if CurMenuPos >= 27 then
+            begin
+              Input.InputCursor := 2;
+              Dec(CurMenuPos, 13);
+            end else
+            if CurMenuPos >= 14 then
+            begin
+              Input.InputCursor := 2;
+              Dec(CurMenuPos, 14);
             end;
             if CurMenuPos = 0 then
               Inc(CurMenuPos); 
@@ -327,15 +520,25 @@ begin
           end;
         SCAN_RIGHT:
           begin
-            if CurMenuPos <= 13 then
-            begin
-              Input.InputCursor := 1;
-              Inc(CurMenuPos, 14)
-            end else
             if CurMenuPos = 15 then
             begin
               Input.InputCursor := 1;
               CurMenuPos := 28;
+            end else
+            if CurMenuPos = 28 then
+            begin
+              Input.InputCursor := 1;
+              CurMenuPos := 41;
+            end else
+            if CurMenuPos <= 14 then
+            begin
+              Input.InputCursor := 1;
+              Inc(CurMenuPos, 14)
+            end else
+            if CurMenuPos <= 40 then
+            begin
+              Input.InputCursor := 1;
+              Inc(CurMenuPos, 13)
             end;
             if CurMenuPos = 14 then
               Input.InputCursor := 1;
@@ -344,14 +547,14 @@ begin
           begin
             if CurMenuPos > 1 then
               Dec(CurMenuPos);
-            if CurMenuPos = 14 then
+            if (CurMenuPos = 14) or (CurMenuPos = 41) then
               Input.InputCursor := 1;
           end;
         SCAN_DOWN:
           begin
-            if CurMenuPos < 28 then
+            if CurMenuPos < 53 then
               Inc(CurMenuPos);
-            if CurMenuPos = 14 then
+            if (CurMenuPos = 14) or (CurMenuPos = 41) then
               Input.InputCursor := 1;
           end;
         SCAN_SPACE:
@@ -487,18 +690,24 @@ initialization
   for I := 0 to 13 do
     MenuList[I].X := OP1_X + 1;
   for I := 14 to 27 do
-    MenuList[I].X := OP2_X + 1;
-  MenuList[28].X := OP3_X + 1;
+    MenuList[I].X := OP2_X + 1;  
+  for I := 28 to 40 do
+    MenuList[I].X := OP3_X + 1;
+  for I := 41 to 53 do
+    MenuList[I].X := OP4_X + 1;
   // Y
   MenuList[0].Y := 3;
   MenuList[1].Y := 4;  
   MenuList[14].Y := 3;
   MenuList[15].Y := 4;
-  MenuList[28].Y := 4;
+  MenuList[28].Y := 4; 
+  MenuList[41].Y := 4;
   for I := 7 to 18 do
   begin
     MenuList[I - 5].Y := I;
     MenuList[I + 9].Y := I;
+    MenuList[I + (29 - 7)].Y := I;     
+    MenuList[I + (42 - 7)].Y := I;
   end;
 
 end.

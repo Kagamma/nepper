@@ -190,6 +190,7 @@ begin
   WriteText(0, 0, $1F, '                                   - Nepper -', 80);
   WriteText(0, 1, $0E, '     [F2] Song/Pattern Editor  [F3] Instrument Editor  [ESC] Exit Nepper');
 
+  WriteText(0, 3, $4E, ' SONG DATA    ');    
   WriteText(0, 3, $4E, ' SONG DATA    ');
   WriteText(0, 5, COLOR_LABEL, 'Song name:');
   WriteText(63, 5, COLOR_LABEL, 'SPECIAL COMMANDS:');
@@ -264,9 +265,9 @@ var
   begin
     if (Note <> 0) or (Octave <> 0) then
     begin
-      Adlib.SetInstrument(8, @NepperRec.Instruments[CurInstrIndex]);
-      AdLib.NoteClear(8);
-      Adlib.NoteOn(8, Note, Octave);
+      Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[CurInstrIndex]);
+      AdLib.NoteClear(CurChannel);
+      Adlib.NoteOn(CurChannel, Note, Octave);
     end;
     if IsEditMode then
     begin

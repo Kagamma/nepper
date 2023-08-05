@@ -10,7 +10,8 @@ var
 procedure InputText(var S: String; const MaxLen: Byte; const IsHex: Boolean = False);
 procedure InputHex2(var S: String; var Value: Byte; const MaxValue: Byte);
 procedure InputHex3(var S: String; var Value: Word; const MaxValue: Word);
-procedure InputYesNo(var S: String; var Value: Byte);
+procedure InputYesNo(var S: String; var Value: Byte);        
+procedure InputPanning(var S: String; var Value: Byte);
 
 implementation
 
@@ -208,6 +209,30 @@ begin
         KBInput.ScanCode := $FF;
         S := 'No ';
         Value := 0;
+      end;
+  end;
+end;
+
+procedure InputPanning(var S: String; var Value: Byte);
+begin
+  case KBInput.CharCode of
+    'l':
+      begin
+        KBInput.ScanCode := $FF;
+        S := 'L';
+        Value := 1;
+      end;   
+    'r':
+      begin
+        KBInput.ScanCode := $FF;
+        S := 'R';
+        Value := 2;
+      end; 
+    'c', 'm':
+      begin
+        KBInput.ScanCode := $FF;
+        S := 'C';
+        Value := 3;
       end;
   end;
 end;
