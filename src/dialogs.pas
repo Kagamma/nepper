@@ -96,7 +96,10 @@ procedure ShowHelpDialog(const FileName: String40);
       begin
         Readln(F, HelpData[HelpSize]);
         Inc(HelpSize);
+        if HelpSize >= High(HelpData) then
+          Break;
       end;
+      Close(F);
       Result := True;
     end;
   end;
@@ -132,7 +135,7 @@ procedure ShowHelpDialog(const FileName: String40);
 begin
   if not ReadFile then
   begin
-    ShowMessageDialog('Error', 'Help file not found!');
+    ShowMessageDialog('Error', '"' + FileName + '" not found!');
     Exit;
   end;
   RenderAll;
