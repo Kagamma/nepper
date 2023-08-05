@@ -202,6 +202,8 @@ AtBeginning:
           end;
         '4': // Vibrato
           begin
+            if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
+              LastNoteTimerList[CurChannel] := 0;
             TmpByte := GetEffectReady;
             SetFreq(CurChannel, SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] * 4 div ($10 - TNepperEffectValue(TmpByte).V2));
             Inc(LastNoteTimerList[CurChannel], High(LastNoteTimerList) div CurSpeed + CurSpeed * TNepperEffectValue(TmpByte).V1);
@@ -246,6 +248,8 @@ AtBeginning:
           end;
         'M': // Tremolo
           begin
+            if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
+              LastNoteTimerList[CurChannel] := 0;
             TmpByte := GetEffectReady;
             I := SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
             Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + I, $3F), 0);  
