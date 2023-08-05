@@ -434,11 +434,11 @@ end;
 
 procedure Stop;
 begin
+  IsPlaying := False;
   for I := 0 to 8 do
   begin
     Adlib.NoteClear(I);
   end;
-  IsPlaying := False;
   CleanUpStates;
   Screen.WriteText(63, 0, $1F, '', 17);
 end;
