@@ -121,7 +121,7 @@ procedure ShowHelpDialog(const FileName: String40);
   var
     I: Byte;
   begin
-    for I := 23 downto 1 do
+    for I := 24 downto 1 do
       Move(ScreenPointer[I * 80], ScreenPointer[(I + 1) * 80], 160);
     WriteText(0, 1, $0F, HelpData[HelpAnchor], 80);
   end;
