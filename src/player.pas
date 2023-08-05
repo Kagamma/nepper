@@ -279,12 +279,17 @@ AtBeginning:
             Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
             Inc(LastNoteTimerList[CurChannel]);
           end;
-        'S': // Stop note
+        'Z':
           begin
             if CurTicks = 0 then
             begin
-              Adlib.NoteOff(CurChannel);
-              Word(LastEffectList[CurChannel]) := 0;
+              case Byte(Word(PCell^.Effect)) of
+                $F0: // Stop note
+                  begin
+                    Adlib.NoteOff(CurChannel);
+                    Word(LastEffectList[CurChannel]) := 0;
+                  end;
+              end;
             end;
           end;
       end;
