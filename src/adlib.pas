@@ -104,7 +104,7 @@ type
     Alg: TBit1;
     Feedback: TBit3;
     Panning: TBit2;
-    Unused: TBit2;
+    Alg2: TBit2;
   end;
 
   TAdlibRegBD = bitpacked record
@@ -204,6 +204,7 @@ var
   Op: PAdlibInstrumentOperator;
   Volume: TAdlibReg4055;
   VolumeTmp: ShortInt;
+  Alg2: TAdlibRegC0C8;
 begin
   if IsOPL3Enabled then
   begin
@@ -229,7 +230,13 @@ begin
         WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $E0, Byte(Op^.Waveform));
       end;
     end;
-    WriteReg(C + $C0, Byte(Inst^.AlgFeedback));
+    Inst^.AlgFeedback.Alg := Inst^.AlgFeedback.Alg2;
+    WriteReg(C + $C0, Byte(Inst^.AlgFeedback)); 
+    if (Byte(C) < 6) or (Byte(C) > 8) then
+    begin
+      Alg2.Alg := Inst^.AlgFeedback.Alg2 shr 1;
+      WriteReg(C + 3 + $C0, Byte(Alg2));
+    end;
   end else
   begin
     for I := 0 to 1 do
@@ -249,7 +256,8 @@ begin
       WriteReg(ADLIB_SLOTS_OPL2[Channel, I] + $60, Byte(Op^.AttackDecay));
       WriteReg(ADLIB_SLOTS_OPL2[Channel, I] + $80, Byte(Op^.SustainRelease));
       WriteReg(ADLIB_SLOTS_OPL2[Channel, I] + $E0, Byte(Op^.Waveform));
-    end;      
+    end;
+    Inst^.AlgFeedback.Alg := Inst^.AlgFeedback.Alg2;
     WriteReg(Channel + $C0, Byte(Inst^.AlgFeedback));
   end;
 end;

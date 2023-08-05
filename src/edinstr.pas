@@ -122,7 +122,7 @@ var
   S: String20;
 begin
   WriteText(OP1_X + 1, 3, $0F, HexStrFast2(CurInstrPos));
-  WriteText(OP1_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Alg));
+  WriteText(OP1_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Alg2));
   WriteText(OP2_X + 1, 3, $0F, CurInstr^.Name, 20);
   WriteText(OP2_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Feedback));
   WriteText(OP3_X + 1, 4, $0F, HexStrFast2(CurInstr^.FineTune));              
@@ -165,9 +165,9 @@ begin
     case CurMenuPos of
       1:
         begin
-          V := CurInstr^.AlgFeedback.Alg;
-          Input.InputHex2(S, V, 1);
-          CurInstr^.AlgFeedback.Alg := V;
+          V := CurInstr^.AlgFeedback.Alg2;
+          Input.InputHex2(S, V, 3);
+          CurInstr^.AlgFeedback.Alg2 := V;
         end;
       //
       2:

@@ -33,7 +33,7 @@ end;
 procedure RenderTexts;
 begin
   WriteText(0, 0, $1A, 'SONG EDIT   ');
-  WriteText(0, 23, $0A, '[TAB] Pattern   [INS] Ins Pos. [L] Load [>] Add Chan. [F10] 4Chan.mode', 80);
+  WriteText(0, 23, $0A, '[TAB] Pattern   [INS] Ins Pos. [L] Load [>] Add Chan. [F10] OPL2/3', 80);
   WriteText(0, 24, $0A, '[SPC] Play/Stop [DEL] Del Pos. [S] Save [<] Sub Chan.', 80);
 end;
 
@@ -61,9 +61,9 @@ begin
     end;
   end;
   if NepperRec.IsOPL3 then
-    WriteText(63, 4, COLOR_LABEL, '4-channel mode')
+    WriteText(63, 4, $03, 'OPL3 mode')
   else
-    WriteText(63, 4, COLOR_LABEL, '', 14);
+    WriteText(63, 4, $03, '', 14);
 end;
 
 procedure RenderSongInfo;
