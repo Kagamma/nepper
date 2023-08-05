@@ -387,14 +387,8 @@ end;
 
 procedure SetOPL3(const V: Byte);
 begin
-  if V <> 0 then
-  begin
-    WriteReg($104, $3F);
-  end else
-  begin
-    WriteReg($104, 0);
-  end;
   WriteReg($105, V);
+  WriteReg($104, $3F);
   IsOPL3Enabled := Boolean(V);
 end;
 

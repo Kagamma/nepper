@@ -35,6 +35,7 @@ var
   CurInstrPos: Byte = 0;
   TestNote: TNepperNote;
   MenuList: array[0..53] of TEdInstrMenuItem;
+  Is4Channel: Boolean = True;
 
 procedure ResetParams;
 begin                           
@@ -109,9 +110,10 @@ begin
   WriteTextBack(OP4_X, 16, COLOR_LABEL, 'Scale Envelope:');
   WriteTextBack(OP4_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
   WriteTextBack(OP4_X, 18, COLOR_LABEL, 'Volume Vibrator:');
-
+                                      
+  WriteTextBack(76, 21, COLOR_LABEL, 'Test channels:');
   WriteTextBack(76, 22, COLOR_LABEL, 'Test tone:');
-  WriteText(0, 23, $0A, '[L] Load [<] Prev [SPC] Test  [+] Test Tone Up');
+  WriteText(0, 23, $0A, '[L] Load [<] Prev [SPC] Test  [+] Test Tone Up   [F10] Test 2/4-chan');
   WriteText(0, 24, $0A, '[S] Save [>] Next [CR] Quiet  [-] Test Tone Down');
 end;
 
@@ -146,6 +148,10 @@ begin
   Str(TestNote.Octave, S);
   WriteText(77, 22, $0F, ADLIB_NOTESYM_TABLE[TestNote.Note]);
   WriteText(79, 22, $0F, S);
+  if Adlib.IsOPL3Enabled and Is4Channel then
+    WriteText(77, 21, $0F, '4')
+  else
+    WriteText(77, 21, $0F, '2');
 end;
 
 procedure Loop;
@@ -559,13 +565,18 @@ begin
           end;
         SCAN_SPACE:
           begin
-            Adlib.SetInstrument(8, CurInstr);
-            AdLib.NoteClear(8);
-            Adlib.NoteOn(8, TestNote.Note, TestNote.Octave, CurInstr^.FineTune);
+            if Is4Channel then
+              V := 8
+            else
+              V := 5;
+            Adlib.SetInstrument(V, CurInstr);
+            AdLib.NoteClear(V);
+            Adlib.NoteOn(V, TestNote.Note, TestNote.Octave, CurInstr^.FineTune);
             IsInstrTesting := True;
           end;
         SCAN_ENTER:
           begin
+            Adlib.NoteClear(5);
             Adlib.NoteClear(8);
             IsInstrTesting := False;
           end;
@@ -577,6 +588,11 @@ begin
             Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
             Continue;
           end;
+        SCAN_F10:
+          begin
+            Is4Channel := not Is4Channel;
+            RenderInstrInfo;
+          end
         else
           begin
             case KBInput.CharCode of

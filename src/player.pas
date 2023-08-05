@@ -55,7 +55,7 @@ begin
   FillChar(LastInstrumentList[0], SizeOf(LastInstrumentList), $FF);
   FillChar(LastNoteList[0], SizeOf(LastNoteList), 0);
   FillChar(LastEffectList[0], SizeOf(LastEffectList), 0);
-  FillChar(LastNoteDelayList[0], SizeOf(LastNoteDelayList), 0);      
+  FillChar(LastNoteDelayList[0], SizeOf(LastNoteDelayList), 0);
   FillChar(LastNoteTimerList[0], SizeOf(LastNoteTimerList), 0);
   FillChar(VolumeModList[0], SizeOf(VolumeModList), 0);
 end;
@@ -126,7 +126,7 @@ begin
     Reg^.Octave := Reg^.Octave + 1;
   end else
   if Reg^.Freq < ADLIB_FREQ_TABLE[1] then
-  begin       
+  begin
     SetRegFreq(Channel, ADLIB_FREQ_TABLE[13]);
     Reg^.Octave := Reg^.Octave - 1;
   end;
@@ -141,14 +141,14 @@ begin
   ModifyRegFreq(Channel, Freq, CurSpeed);
   if Reg^.Freq > ADLIB_FREQ_TABLE[13] then
   begin
-    SetRegFreq(Channel, ADLIB_FREQ_TABLE[1]);  
+    SetRegFreq(Channel, ADLIB_FREQ_TABLE[1]);
     Reg^.Octave := Reg^.Octave + 1;
     LastNoteList[Channel].Octave := Reg^.Octave;
     LastNoteList[Channel].Note := 1;
   end else
   if Reg^.Freq < ADLIB_FREQ_TABLE[1] then
   begin
-    SetRegFreq(Channel, ADLIB_FREQ_TABLE[13]); 
+    SetRegFreq(Channel, ADLIB_FREQ_TABLE[13]);
     Reg^.Octave := Reg^.Octave - 1;
     LastNoteList[Channel].Octave := Reg^.Octave;
     LastNoteList[Channel].Note := 13;
@@ -157,7 +157,7 @@ begin
   begin
     if ((Freq < 0) and (Reg^.Freq < ADLIB_FREQ_TABLE[LastNoteFutureList[Channel].Note])) or
        ((Freq > 0) and (Reg^.Freq > ADLIB_FREQ_TABLE[LastNoteFutureList[Channel].Note])) then
-    begin                      
+    begin
       SetRegFreq(Channel, ADLIB_FREQ_TABLE[LastNoteFutureList[Channel].Note]);
       LastNoteList[Channel] := LastNoteFutureList[Channel];
     end;
@@ -170,7 +170,7 @@ procedure Play;
   begin
     Result := Byte(Word(PCell^.Effect));
     if Result = 0 then
-      Result := Byte(Word(LastEffectList[CurChannel]));  
+      Result := Byte(Word(LastEffectList[CurChannel]));
     Word(LastEffectList[CurChannel]) := Result;
     LastEffectList[CurChannel].Effect := PCell^.Effect.Effect;
   end;
@@ -235,7 +235,7 @@ AtBeginning:
           begin
             if CurTicks = 0 then
               CurCell := $40;
-          end; 
+          end;
         'E': // BPM
           begin
             if CurTicks = 0 then
@@ -252,7 +252,7 @@ AtBeginning:
               LastNoteTimerList[CurChannel] := 0;
             TmpByte := GetEffectReady;
             I := SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
-            Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + I, $3F), 0);  
+            Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + I, $3F), 0);
             Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total) + I, $3F), 0);
             Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total) + I, $3F), 0);
             Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + I, $3F), 0);
@@ -313,7 +313,7 @@ AtBeginning:
   end;
   // Play note
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-  begin  
+  begin
     if CurTicks = LastNoteDelayList[CurChannel] then
     begin
       PChannel := @PPattern^[CurChannel];
@@ -423,6 +423,8 @@ AtBeginning:
         Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
         HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
         Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
+        Screen.WriteTextFast1(ScreenPointer + 74, ColorStatus, '/');
+        Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
       end;
       goto AtBeginning;
     end else

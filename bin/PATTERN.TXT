@@ -1,7 +1,7 @@
 Default freq: 50Hz
 Default speed/ticks: 6
 
-When OPL3 mode is enabled, channel 1,2,3,7,8,9 will perform 4-operator synth.
+When OPL3 mode is enabled, only column 1,2,3,7,8,9 perform 4-operator synth.
 
 List of effects
 ===============
