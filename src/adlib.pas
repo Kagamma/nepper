@@ -23,20 +23,20 @@ const
     ($12, $15)
   );
 
-  ADLIB_SLOTS_OPL3: array[0..MAX_CHANNELS - 1, 0..3] of Byte = (
-    ($00, $03, $08, $0B),
-    ($01, $04, $09, $0C),
-    ($02, $05, $0A, $0D),
-    ($10, $13, $FF, $FF),
-    ($11, $14, $FF, $FF),
-    ($12, $15, $FF, $FF),
-    ($00, $03, $08, $0B),
-    ($01, $04, $09, $0C),
-    ($02, $05, $0A, $0D)
+  ADLIB_SLOTS_OPL3: array[0..MAX_CHANNELS - 1, 0..3] of Word = (
+    ($000, $003, $008, $00B),
+    ($001, $004, $009, $00C),
+    ($002, $005, $00A, $00D),
+    ($010, $013, $0FF, $0FF),
+    ($011, $014, $0FF, $0FF),
+    ($012, $015, $0FF, $0FF),
+    ($100, $103, $108, $10B),
+    ($101, $104, $109, $10C),
+    ($102, $105, $10A, $10D)
   );
 
-  ADLIB_CHANNELS_OPL3: array[0..MAX_CHANNELS - 1] of Byte = (
-    0, 1, 2, 6, 7, 8, 9, 10, 11
+  ADLIB_CHANNELS_OPL3: array[0..MAX_CHANNELS - 1] of Word = (
+    0, 1, 2, 6, 7, 8, $100, $101, $102
   );
 
   // Music Frequency * 2^(20-Block) / 49716 Hz
@@ -157,16 +157,21 @@ procedure NoteOff(const Channel: Byte);
 procedure NoteClear(const Channel: Byte);
 procedure SetRegFreq(const Channel: Byte; const Freq: Word); inline;
 procedure ModifyRegFreq(const Channel: Byte; const Freq: Integer; const Ticks: Byte); inline;
-procedure WriteReg(const Reg, Value: Byte);
+procedure WriteReg(const Reg: Word; Value: Byte);
 procedure WriteNoteReg(const Channel: Byte; const Reg: PAdlibRegA0B8);
 procedure SetOPL3(const V: Byte);
 
 implementation
 
-procedure WriteReg(const Reg, Value: Byte); assembler;
+procedure WriteReg(const Reg: Word; Value: Byte); assembler;
 asm
-  mov al,Reg
+  mov ax,Reg
   mov dx,ADLIB_PORT_STATUS
+  or  ah,ah
+  jz  @Pri
+  inc dx
+  inc dx
+@Pri:
   out dx,al
   // wait at least 3.3us
   in al,dx; in al,dx; in al,dx; in al,dx; in al,dx; in al,dx;
@@ -184,22 +189,7 @@ asm
   in al,dx; in al,dx; in al,dx; in al,dx; in al,dx;
 end;
 
-// OPL-3
-procedure WriteReg2(const Reg, Value: Byte); assembler;
-asm
-  mov al,Reg
-  mov dx,ADLIB_PORT_STATUS+2
-  out dx,al
-  //
-  inc dx
-  mov al,Value
-  out dx,al
-  dec dx
-  // wait a bit
-  in al,dx; in al,dx; in al,dx;
-end;
-
-function Chan(const C: Byte): Byte; inline;
+function Chan(const C: Byte): Word; inline;
 begin
   if IsOPL3Enabled then
     Result := ADLIB_CHANNELS_OPL3[C]
@@ -209,7 +199,8 @@ end;
 
 procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);
 var
-  I, C: Byte;
+  I: Byte;
+  C: Word;
   Op: PAdlibInstrumentOperator;
   Volume: TAdlibReg4055;
   VolumeTmp: ShortInt;
@@ -230,29 +221,15 @@ begin
       Volume.Total := VolumeTmp;
 
       if ADLIB_SLOTS_OPL3[Channel, I] <> $FF then
-        if I < 6 then
-        begin
-          WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $20, Byte(Op^.Effect));
-          WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $40, Byte(Volume));
-          WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $60, Byte(Op^.AttackDecay));
-          WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $80, Byte(Op^.SustainRelease));
-          WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $E0, Byte(Op^.Waveform));
-        end else
-        begin
-          WriteReg2(ADLIB_SLOTS_OPL3[Channel, I] + $20, Byte(Op^.Effect));
-          WriteReg2(ADLIB_SLOTS_OPL3[Channel, I] + $40, Byte(Volume));
-          WriteReg2(ADLIB_SLOTS_OPL3[Channel, I] + $60, Byte(Op^.AttackDecay));
-          WriteReg2(ADLIB_SLOTS_OPL3[Channel, I] + $80, Byte(Op^.SustainRelease));
-          WriteReg2(ADLIB_SLOTS_OPL3[Channel, I] + $E0, Byte(Op^.Waveform));
-        end;
+      begin
+        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $20, Byte(Op^.Effect));
+        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $40, Byte(Volume));
+        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $60, Byte(Op^.AttackDecay));
+        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $80, Byte(Op^.SustainRelease));
+        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $E0, Byte(Op^.Waveform));
+      end;
     end;
-    if C <= 8 then
-      WriteReg(C + $C0, Byte(Inst^.AlgFeedback))
-    else 
-    begin
-      C := C - 9;
-      WriteReg2(C + $C0, Byte(Inst^.AlgFeedback));
-    end;
+    WriteReg(C + $C0, Byte(Inst^.AlgFeedback));
   end else
   begin
     for I := 0 to 1 do
@@ -317,87 +294,54 @@ begin
     WriteReg(I, 0);
   if IsOPL3Avail then
     for I := 0 to 245 do
-    WriteReg2(I, 0);
+      WriteReg($100 + I, 0);
 end;
 
 procedure WriteNoteReg(const Channel: Byte; const Reg: PAdlibRegA0B8);
 var
-  C: Byte;
+  C: Word;
 begin  
   C := Chan(Channel);
-  if C <=8 then
-  begin
-    WriteReg($A0 + C, Lo(Word(Reg^)));
-    WriteReg($B0 + C, Hi(Word(Reg^)));
-  end else
-  begin
-    C := C - 9;
-    WriteReg2($A0 + C, Lo(Word(Reg^)));
-    WriteReg2($B0 + C, Hi(Word(Reg^)));
-  end;
+  WriteReg($A0 + C, Lo(Word(Reg^)));
+  WriteReg($B0 + C, Hi(Word(Reg^)));
 end;
 
 procedure NoteOn(const Channel, Note, Octave: Byte; const FineTune: ShortInt = 0);
 var
   N: PAdlibRegA0B8;
-  C: Byte;
+  C: Word;
 begin
   C := Chan(Channel);
   N := @FreqRegs[Channel];  
   N^.KeyOn := 0;
-  if C <=8 then
-    WriteReg($B0 + C, Hi(Word(N^)))
-  else
-    WriteReg2($B0 + C, Hi(Word(N^)));
+  WriteReg($B0 + C, Hi(Word(N^)));
   N^.Freq := ADLIB_FREQ_TABLE[Note] + FineTune;
   N^.Octave := Octave;
   N^.KeyOn := 1;   
-  FreqPrecisionList[Channel] := DWord(N^.Freq) shl 8;  
-  if C <=8 then
-  begin
-    WriteReg($A0 + C, Lo(Word(N^)));
-    WriteReg($B0 + C, Hi(Word(N^)));
-  end else
-  begin
-    C := C - 9;
-    WriteReg2($A0 + C, Lo(Word(N^)));
-    WriteReg2($B0 + C, Hi(Word(N^)));
-  end;
+  FreqPrecisionList[Channel] := DWord(N^.Freq) shl 8;
+  WriteReg($A0 + C, Lo(Word(N^)));
+  WriteReg($B0 + C, Hi(Word(N^)));
   FreqRegsBack[Channel] := N^;
 end;
 
 procedure NoteOff(const Channel: Byte);
 var
-  C: Byte;
+  C: Word;
   N: PAdlibRegA0B8;
 begin 
   C := Chan(Channel);
   N := @FreqRegs[Channel];
   N^.KeyOn := 0;
-  if C <=8 then
-    WriteReg($B0 + C, Hi(Word(N^)))
-  else    
-  begin
-    C := C - 9;
-    WriteReg2($B0 + C, Hi(Word(N^)));
-  end;
+  WriteReg($B0 + C, Hi(Word(N^)));
 end;
 
 procedure NoteClear(const Channel: Byte);   
 var
-  C: Byte;
+  C: Word;
 begin
   C := Chan(Channel);
-  if C <=8 then
-  begin
-    WriteReg($A0 + C, 0);
-    WriteReg($B0 + C, 0);
-  end else
-  begin
-    C := C - 9;
-    WriteReg2($A0 + C, 0);
-    WriteReg2($B0 + C, 0);
-  end;
+  WriteReg($A0 + C, 0);
+  WriteReg($B0 + C, 0);
 end;
 
 procedure SetRegFreq(const Channel: Byte; const Freq: Word);
@@ -416,12 +360,12 @@ procedure SetOPL3(const V: Byte);
 begin
   if V <> 0 then
   begin
-    WriteReg2($04, $3F);
+    WriteReg($104, $3F);
   end else
   begin
-    WriteReg2($04, 0);
+    WriteReg($104, 0);
   end;
-  WriteReg2($05, V);
+  WriteReg($105, V);
   IsOPL3Enabled := Boolean(V);
 end;
 
