@@ -11,3 +11,5 @@ For now it only supports its own file format `.ntr` for modules and `.nis` for i
 ![1](/doc/img/nepper_000.png)
 
 ![2](/doc/img/nepper_001.png)
+
+![3](/doc/img/nepper_book8088.png)
