@@ -609,7 +609,7 @@ begin
                     if TestNote.Octave > 0 then
                     begin
                       TestNote.Octave := TestNote.Octave - 1;
-                      TestNote.Note := 11;
+                      TestNote.Note := 12;
                     end;
                   end;
                   Str(TestNote.Octave, S);
