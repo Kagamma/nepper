@@ -218,6 +218,17 @@ begin
           Adlib.SetOPL3(Byte(NepperRec.IsOPL3));
           RenderSongInfoFast;
         end;
+      SCAN_F1:
+        begin
+          OldCursorX := CursorX;
+          OldCursorY := CursorY;
+          ShowHelpDialog('PATTERN.TXT');
+          RenderCommonTexts;
+          RenderSongInfo;
+          RenderTexts;
+          EdPattern.RenderPatternInfo;
+          Screen.SetCursorPosition(OldCursorX, OldCursorY);
+        end;
       SCAN_SPACE:
         begin
           if not IsPlaying then

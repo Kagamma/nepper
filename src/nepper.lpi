@@ -108,6 +108,7 @@
     </Parsing>
     <CodeGeneration>
       <SmartLinkUnit Value="True"/>
+      <StackSize Value="4096"/>
       <TargetProcessor Value="8086"/>
       <TargetCPU Value="i8086"/>
       <TargetOS Value="msdos"/>

@@ -46,7 +46,7 @@ procedure RenderTexts;
 begin
   WriteText(0, 0, $1F, '                                   - Nepper -', 80);
   WriteText(0, 0, $1A, 'INSTRUMENT EDIT');
-  WriteText(0, 1, $0E, '     [F2] Song/Pattern Editor  [F3] Instrument Editor  [ESC] Exit Nepper');
+  WriteText(0, 1, $0E, '  [F1] Help [F2] Song/Pattern Editor [F3] Instrument Editor [ESC] Exit Nepper');
 
   WriteTextBack(OP1_X, 3, COLOR_LABEL, 'Inst. number:');
   WriteTextBack(OP1_X, 4, COLOR_LABEL, 'Synthesis mode:');
@@ -568,6 +568,14 @@ begin
           begin
             Adlib.NoteClear(8);
             IsInstrTesting := False;
+          end;
+        SCAN_F1:
+          begin
+            ShowHelpDialog('INSTR.TXT');
+            RenderTexts;
+            RenderInstrInfo;
+            Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
+            Continue;
           end;
         else
           begin

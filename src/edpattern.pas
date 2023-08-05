@@ -18,7 +18,7 @@ procedure Loop;
 implementation
 
 uses
-  Input, Keyboard, Screen, Formats, EdSong, Player;
+  Input, Keyboard, Screen, Formats, EdSong, Player, Dialogs;
 
 const            
   PATTERN_SCREEN_START_X = 4;
@@ -188,7 +188,7 @@ end;
 procedure RenderCommonTexts;
 begin
   WriteText(0, 0, $1F, '                                   - Nepper -', 80);
-  WriteText(0, 1, $0E, '     [F2] Song/Pattern Editor  [F3] Instrument Editor  [ESC] Exit Nepper');
+  WriteText(0, 1, $0E, '  [F1] Help [F2] Song/Pattern Editor [F3] Instrument Editor [ESC] Exit Nepper');
 
   WriteText(0, 3, $4E, ' SONG DATA    ');    
   WriteText(0, 3, $4E, ' SONG DATA    ');
@@ -226,6 +226,8 @@ var
   W: Word;
   PW: PWord;
   OldInputCursor: Byte;
+  OldCursorX,
+  OldCursorY: Byte;
 
   procedure MoveDown(Step: Byte);
   begin
@@ -277,7 +279,7 @@ var
       if (Note = 0) and (Octave = 0) then
       begin
         WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, '---', 3);
-        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 3), PATTERN_SCREEN_START_Y + CurCell - Anchor, $0F, '00', 3);
+        WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + 3, PATTERN_SCREEN_START_Y + CurCell - Anchor, $07, '00', 2);
       end else
       begin
         WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, ADLIB_NOTESYM_TABLE[Note], 2);
@@ -520,6 +522,17 @@ begin
       SCAN_END:
         begin
           MoveDown($3F);
+        end;
+      SCAN_F1:
+        begin
+          OldCursorX := CursorX;
+          OldCursorY := CursorY;
+          ShowHelpDialog('PATTERN.TXT');
+          RenderCommonTexts;
+          RenderSongInfo;
+          RenderTexts;
+          EdPattern.RenderPatternInfo;
+          Screen.SetCursorPosition(OldCursorX, OldCursorY);
         end;
       SCAN_SPACE:
         begin
