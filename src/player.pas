@@ -421,9 +421,9 @@ AtBeginning:
         PPattern := Formats.Patterns[NepperRec.PatternIndices[CurPatternIndex]];
         HexStrFast2(CurPatternIndex, GS2);
         Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
+        Screen.WriteTextFast1(ScreenPointer + 74, ColorStatus, '/');
         HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
         Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
-        Screen.WriteTextFast1(ScreenPointer + 74, ColorStatus, '/');
         Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
       end;
       goto AtBeginning;
