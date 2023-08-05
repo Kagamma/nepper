@@ -1,0 +1,78 @@
+Default freq: 50Hz
+Default speed/ticks: 6
+
+When OPL3 mode is enabled, channel 1,2,3,7,8,9 will perform 4-operator synth
+
+List of effects
+===============
+
+[0xy] ARPEGGIO
+--------------
+This command causes the note to quickly cycle through three notes.
+x: 2nd note halftone above.
+y: 3rd note halftone above.
+Make sure speed is at least 3 if you want to play all notes.
+
+[1xx] FREQUENCY SLIDE UP
+------------------------
+This command slides the frequency up (pitch bend) one per tick.
+xx: Speed of slide.
+00: Uses the last value.
+
+[2xx] FREQUENCY SLIDE DOWN
+--------------------------
+This command slides the frequency down (pitch bend) one per tick.
+xx: Speed of slide.
+00: Uses the last value.
+
+[3xx] TONE PORTAMENTO
+---------------------
+This command is used together with a note and will slide to its frequency.
+xx: Speed of slide.
+
+[4xy] VIBRATO
+-------------
+This command causes the frequency to oscillate.
+x: Speed.
+y: Depth.
+00: Uses the last value.
+
+[9xx] VOLUME
+------------
+This command set instrument's volume value.
+xx: Volume in 00..3F range.
+
+[Axy] VOLUME SLIDE
+------------------
+This command slides the volume up or down at the given speed.
+x: Speed of slide up
+y: Speed of slide down
+00: Uses the last value
+
+[D00] PATTERN BREAK
+This commands break current pattern and jumps to next order.
+
+[Exx] SET CLOCK FREQUENCY
+-------------------------
+This command changes the clock frequency.
+xx: Frequency in Hz.
+
+[Fxx] SET SPEED
+---------------
+This command changes the song speed.
+xx: Number of ticks to wait before process to next row.
+
+[Mxy] TREMOLO
+This command causes the volume to oscillate.
+x: Speed.
+y: Depth.
+00: Uses the last value.
+
+[Nxy] TREMOR
+This command causes the volume to remain normal for 'x' ticks, then fades the
+volume to zero for 'y' ticks.
+
+[S00] START RELEASE PHASE
+-------------------------
+This command starts the release phase of note.
+
