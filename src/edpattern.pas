@@ -215,8 +215,8 @@ end;
 procedure RenderTexts;
 begin      
   WriteText(0, 0, $1A, 'PATTERN EDIT');
-  WriteText(0, 23, $0A, '[TAB] Song [INS-DEL] I/D  [<>] Instr.sel   [SF-UP/DN] Step  [F5-F7] Cut/Cpy/P', 80);
-  WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit mode [+-] Pattern.sel [SF-0..6] Octave  ', 80);
+  WriteText(0, 23, $0A, '[TAB] Song [INS-DEL] I/D  [<>] Instr.sel   [SF-UP/DN] Step  [F4-F6] Cut/Cpy/P No', 80);
+  WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit mode [+-] Pattern.sel [SF-0..6] Octave [F7-F9] Cut/Cpy/P Ef', 80);
 end;
 
 procedure LoopEditPattern;
@@ -433,6 +433,74 @@ var
     end;
   end;
 
+  procedure CopyNotes;
+  var
+    I: Byte;
+  begin
+    for I := 0 to $3F do
+    begin
+      Clipbrd[I].Note := PC^.Cells[I].Note;  
+      Clipbrd[I].InstrumentIndex := PC^.Cells[I].InstrumentIndex;
+    end;
+  end;
+
+  procedure CutNotes;
+  var
+    I: Byte;
+  begin
+    for I := 0 to $3F do
+    begin
+      Clipbrd[I].Note := PC^.Cells[I].Note;    
+      Clipbrd[I].InstrumentIndex := PC^.Cells[I].InstrumentIndex;
+      Byte(PC^.Cells[I].Note) := 0;
+      PC^.Cells[I].InstrumentIndex := 0;
+    end;
+    RenderPatternInfoOneChannel(CurChannel);
+  end;
+
+  procedure PasteNotes;
+  var
+    I: Byte;
+  begin
+    for I := 0 to $3F do
+    begin
+      PC^.Cells[I].Note := Clipbrd[I].Note;
+      PC^.Cells[I].InstrumentIndex := Clipbrd[I].InstrumentIndex;
+    end;
+    RenderPatternInfoOneChannel(CurChannel);
+  end;
+
+  procedure CopyEffects;
+  var
+    I: Byte;
+  begin
+    for I := 0 to $3F do
+      Clipbrd[I].Effect := PC^.Cells[I].Effect;
+  end;
+
+  procedure CutEffects;
+  var
+    I: Byte;
+  begin
+    for I := 0 to $3F do
+    begin
+      Clipbrd[I].Effect := PC^.Cells[I].Effect;
+      Word(PC^.Cells[I].Effect) := 0;
+    end;
+    RenderPatternInfoOneChannel(CurChannel);
+  end;
+
+  procedure PasteEffects;
+  var
+    I: Byte;
+  begin
+    for I := 0 to $3F do
+    begin
+      PC^.Cells[I].Effect := Clipbrd[I].Effect;
+    end;
+    RenderPatternInfoOneChannel(CurChannel);
+  end;
+
 begin
   PC := @CurPattern^[CurChannel];
   // Edit effect
@@ -533,6 +601,30 @@ begin
           RenderTexts;
           EdPattern.RenderPatternInfo;
           Screen.SetCursorPosition(OldCursorX, OldCursorY);
+        end;
+      SCAN_F4:
+        begin
+          CutNotes;
+        end;
+      SCAN_F5:
+        begin
+          CopyNotes;
+        end;
+      SCAN_F6:
+        begin
+          PasteNotes;
+        end;
+      SCAN_F7:
+        begin
+          CutEffects;
+        end;
+      SCAN_F8:
+        begin
+          CopyEffects;
+        end;
+      SCAN_F9:
+        begin
+          PasteEffects;
         end;
       SCAN_SPACE:
         begin

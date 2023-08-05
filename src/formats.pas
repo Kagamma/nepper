@@ -62,6 +62,7 @@ type
 var
   NepperRec: TNepperRec;
   Patterns: array[0..$3F] of PNepperPattern;
+  Clipbrd: TNepperChannelCells;
 
 procedure SaveInstrument(FileName: String; const Inst: PAdlibInstrument);
 function LoadInstrument(FileName: String; const Inst: PAdlibInstrument): Boolean;
