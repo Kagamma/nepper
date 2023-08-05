@@ -215,8 +215,8 @@ end;
 procedure RenderTexts;
 begin      
   WriteText(0, 0, $1A, 'PATTERN EDIT');
-  WriteText(0, 23, $0A, '[TAB] Song [INS-DEL] I/D  [<>] Instr.sel   [SF-UP/DN] Step  [F4-F6] Cut/Cpy/P No', 80);
-  WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit mode [+-] Pattern.sel [SF-0..6] Octave [F7-F9] Cut/Cpy/P Ef', 80);
+  WriteText(0, 23, $0A, '[TAB] Song [INS-DEL] I/D [<>] Instr.sel   [SF-UP/DN] Step   [F4-F6] Cut/Cpy/P No', 80);
+  WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit     [+-] Pattern.sel [SF-LF/RN] Octave [F7-F9] Cut/Cpy/P Ef', 80);
 end;
 
 procedure LoopEditPattern;
@@ -665,67 +665,23 @@ begin
   PC := @CurPattern^[CurChannel];
   Result := False;
   if Keyboard.IsShift then
-    case KBInput.CharCode of
-      ')':
+    case KBInput.ScanCode of
+      SCAN_RIGHT:
         begin
-          CurOctave := 0;
-          RenderOctave;
-          Result := True;
-        end;
-      '!':
-        begin
-          CurOctave := 1;
-          RenderOctave;  
-          Result := True;
-        end;
-      '@':
-        begin
-          CurOctave := 2;
-          RenderOctave; 
-          Result := True;
-        end;
-      '#':
-        begin
-          CurOctave := 3;
-          RenderOctave;  
-          Result := True;
-        end;
-      '$':
-        begin
-          CurOctave := 4;
-          RenderOctave;  
-          Result := True;
-        end;
-      '%':
-        begin
-          CurOctave := 5;
-          RenderOctave;   
-          Result := True;
-        end;
-      '^':
-        begin
-          CurOctave := 6;
-          RenderOctave;
-          Result := True;
-        end;
-      '<':
-        begin
-          if CurInstrIndex > 0 then
+          if CurOctave < 6 then
           begin
-            Dec(CurInstrIndex);
-            RenderInstrument;
-            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[CurInstrIndex]);
-          end;     
+            Inc(CurOctave);
+            RenderOctave;
+          end;
           Result := True;
         end;
-      '>':
+      SCAN_LEFT:
         begin
-          if CurInstrIndex < 31 then
+          if CurOctave > 0 then
           begin
-            Inc(CurInstrIndex);
-            RenderInstrument;
-            Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[CurInstrIndex]);
-          end; 
+            Dec(CurOctave);
+            RenderOctave;
+          end;
           Result := True;
         end;
     end;
