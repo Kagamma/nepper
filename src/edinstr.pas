@@ -111,9 +111,9 @@ begin
   WriteTextBack(OP4_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
   WriteTextBack(OP4_X, 18, COLOR_LABEL, 'Volume Vibrator:');
                                       
-  WriteTextBack(76, 21, COLOR_LABEL, 'Test channels:');
+  WriteTextBack(76, 21, COLOR_LABEL, 'Test operator mode:');
   WriteTextBack(76, 22, COLOR_LABEL, 'Test tone:');
-  WriteText(0, 23, $0A, '[L] Load [<] Prev [SPC] Test  [+] Test Tone Up   [F10] Test 2/4-chan');
+  WriteText(0, 23, $0A, '[L] Load [<] Prev [SPC] Test  [+] Test Tone Up   [F10] Test operator mode');
   WriteText(0, 24, $0A, '[S] Save [>] Next [CR] Quiet  [-] Test Tone Down');
 end;
 
