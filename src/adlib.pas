@@ -189,6 +189,27 @@ asm
   in al,dx; in al,dx; in al,dx; in al,dx; in al,dx;
 end;
 
+procedure WriteRegFast(const Reg: Word; Value: Byte); assembler;
+asm
+  mov ax,Reg
+  mov dx,ADLIB_PORT_STATUS
+  or  ah,ah
+  jz  @Pri
+  inc dx
+  inc dx
+@Pri:
+  out dx,al
+  // wait a bit
+  in al,dx; in al,dx;
+  //
+  inc dx
+  mov al,Value
+  out dx,al
+  dec dx
+  // wait a bit
+  in al,dx; in al,dx;
+end;
+
 function Chan(const C: Byte): Word; inline;
 begin
   if IsOPL3Enabled then
@@ -223,19 +244,19 @@ begin
 
       if ADLIB_SLOTS_OPL3[Channel, I] <> $FF then
       begin
-        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $20, Byte(Op^.Effect));
-        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $40, Byte(Volume));
-        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $60, Byte(Op^.AttackDecay));
-        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $80, Byte(Op^.SustainRelease));
-        WriteReg(ADLIB_SLOTS_OPL3[Channel, I] + $E0, Byte(Op^.Waveform));
+        WriteRegFast(ADLIB_SLOTS_OPL3[Channel, I] + $20, Byte(Op^.Effect));
+        WriteRegFast(ADLIB_SLOTS_OPL3[Channel, I] + $40, Byte(Volume));
+        WriteRegFast(ADLIB_SLOTS_OPL3[Channel, I] + $60, Byte(Op^.AttackDecay));
+        WriteRegFast(ADLIB_SLOTS_OPL3[Channel, I] + $80, Byte(Op^.SustainRelease));
+        WriteRegFast(ADLIB_SLOTS_OPL3[Channel, I] + $E0, Byte(Op^.Waveform));
       end;
     end;
     Inst^.AlgFeedback.Alg := Inst^.AlgFeedback.Alg2;
-    WriteReg(C + $C0, Byte(Inst^.AlgFeedback)); 
+    WriteRegFast(C + $C0, Byte(Inst^.AlgFeedback));
     if (Byte(C) < 6) or (Byte(C) > 8) then
     begin
       Alg2.Alg := Inst^.AlgFeedback.Alg2 shr 1;
-      WriteReg(C + 3 + $C0, Byte(Alg2));
+      WriteRegFast(C + 3 + $C0, Byte(Alg2));
     end;
   end else
   begin

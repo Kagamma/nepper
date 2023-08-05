@@ -129,7 +129,7 @@ procedure ShowHelpDialog(const FileName: String40);
   procedure RenderScrollDown;
   begin
     Move(ScreenPointer[160], ScreenPointer[80], 80 * 23 * 2);
-    WriteText(0, 24, $0F, HelpData[Min(HelpAnchor + 24, HelpSize - 1)], 80);
+    WriteText(0, 24, $0F, HelpData[Min(HelpAnchor + 23, HelpSize - 1)], 80);
   end;
 
 begin
