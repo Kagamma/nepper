@@ -61,9 +61,9 @@ begin
     end;
   end;
   if NepperRec.IsOPL3 then
-    WriteText(63, 4, $03, 'OPL3 mode')
+    WriteText(58, 7, $03, 'OPL3')
   else
-    WriteText(63, 4, $03, '', 14);
+    WriteText(58, 7, $03, '', 4);
 end;
 
 procedure RenderSongInfo;
