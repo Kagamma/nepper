@@ -652,6 +652,24 @@ begin
                 CurPattern := Formats.Patterns[CurPatternIndex];
                 RenderPatternInfo;
               end;
+            end; 
+          '<':
+            begin
+              if CurInstrIndex > 0 then
+              begin
+                Dec(CurInstrIndex);
+                RenderInstrument;
+                Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[CurInstrIndex]);
+              end;
+            end;
+          '>':
+            begin
+              if CurInstrIndex < 31 then
+              begin
+                Inc(CurInstrIndex);
+                RenderInstrument;
+                Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[CurInstrIndex]);
+              end;
             end;
         end;
     end;

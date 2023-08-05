@@ -433,10 +433,14 @@ AtBeginning:
 end;
 
 procedure Stop;
+var
+  BlankInstr: TAdlibInstrument;
 begin
   IsPlaying := False;
+  FillChar(BlankInstr, SizeOf(BlankInstr), 0);
   for I := 0 to 8 do
   begin
+    Adlib.SetInstrument(I, @BlankInstr);
     Adlib.NoteClear(I);
   end;
   CleanUpStates;
