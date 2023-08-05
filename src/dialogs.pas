@@ -108,12 +108,12 @@ procedure ShowHelpDialog(const FileName: String40);
   var
     I: Byte;
   begin
-    FillWord(ScreenPointer[0], 80*25, $3E00);
-    for I := HelpAnchor to HelpAnchor + 79 do
+    FillWord(ScreenPointer[80], 80*24, $0F00);
+    for I := HelpAnchor to HelpAnchor + 78 do
     begin
       if I > HelpSize - 1 then
         Break;
-      WriteText(0, I - HelpAnchor, $3E, HelpData[I]);
+      WriteText(0, I - HelpAnchor + 1, $0F, HelpData[I]);
     end;
   end;
 
@@ -121,15 +121,15 @@ procedure ShowHelpDialog(const FileName: String40);
   var
     I: Byte;
   begin
-    for I := 23 downto 0 do
+    for I := 23 downto 1 do
       Move(ScreenPointer[I * 80], ScreenPointer[(I + 1) * 80], 160);
-    WriteText(0, 0, $3E, HelpData[HelpAnchor], 80);
+    WriteText(0, 1, $0F, HelpData[HelpAnchor], 80);
   end;
 
   procedure RenderScrollDown;
   begin
-    Move(ScreenPointer[80], ScreenPointer[0], 80 * 24 * 2);
-    WriteText(0, 24, $3E, HelpData[Min(HelpAnchor + 24, HelpSize - 1)], 80);
+    Move(ScreenPointer[160], ScreenPointer[80], 80 * 23 * 2);
+    WriteText(0, 24, $0F, HelpData[Min(HelpAnchor + 24, HelpSize - 1)], 80);
   end;
 
 begin
@@ -164,16 +164,16 @@ begin
         end;
       SCAN_PGUP:
         begin
-          Dec(HelpAnchor, 23);
+          Dec(HelpAnchor, 22);
           if HelpAnchor < 0 then
             HelpAnchor := 0;
           RenderAll;
         end;    
       SCAN_PGDN:
         begin
-          Inc(HelpAnchor, 23);
-          if HelpSize - HelpAnchor < 25 then
-            HelpAnchor := HelpSize - 25;
+          Inc(HelpAnchor, 22);
+          if HelpSize - HelpAnchor < 24 then
+            HelpAnchor := HelpSize - 24;
           RenderAll;
         end;
     end;

@@ -174,6 +174,8 @@ procedure Play;
     Word(LastEffectList[CurChannel]) := Result;
     LastEffectList[CurChannel].Effect := PCell^.Effect.Effect;
   end;
+label
+  AtBeginning;
 begin
   // Is playing?
   if not IsPlaying then
@@ -181,6 +183,7 @@ begin
   // Playing
 
   // Pre Effect
+AtBeginning:
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
   begin
     PChannel := @PPattern^[CurChannel];
@@ -380,7 +383,7 @@ begin
   begin
     CurTicks := 0;
     // Change to next PPattern
-    if CurCell > $3F then
+    if CurCell >= $3F then
     begin
       if IsPatternOnly then
       begin
@@ -412,6 +415,7 @@ begin
         HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
         Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
       end;
+      goto AtBeginning;
     end else
       Inc(CurCell);
   end;
