@@ -6,8 +6,8 @@ TYPES OF WAVEFORMS
 
 The following waveforms are for OPL3 only
                                  _   _
-4: /\____/\__  5: /\/\__/\/\ 6: | |_| |_  7: __|\__|\_
-     \/    \/                                 \|  \|
+4: /\____/\__  5: /\/\__/\/\ 6: | | | |   7: __|\__|\_
+     \/    \/                     |_| |_         \|  \|
 
 
 SYNTHESIS MODES
