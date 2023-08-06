@@ -18,14 +18,15 @@ uses
 
 const
   SPEED_TABLE: array[0..63] of ShortInt = (
-    0, 6, 12, 18, 24, 30, 35, 40, 45, 49, 53, 56, 58, 61, 62, 63,
-    63, 63, 62, 61, 58, 56, 53, 49, 45, 40, 35, 30, 24, 18, 12, 6,
-    0, -6, -12, -18, -24, -30, -35, -40, -45, -49, -53, -56, -58, -61, -62, -63,
-    -63, -63, -62, -61, -58, -56, -53, -49, -45, -40, -35, -30, -24, -18, -12, -6
+    0, 12, 24, 37, 48, 60, 70, 80, 90, 98, 106, 112, 117, 122, 125, 126,
+    127, 126, 125, 122, 117, 112, 106, 98, 90, 80, 70, 60, 48, 37, 24, 12,
+    0, -12, -24, -37, -48, -60, -70, -80, -90, -98, -106, -112, -117, -122, -125, -126,
+    -127, -126, -125, -122, -117, -112, -106, -98, -90, -80, -70, -60, -48, -37, -24, -12
   );
 
 var
   I: Byte;
+  Short: ShortInt;
   CurPatternIndex: Byte;
   PInstrument: PAdlibInstrument;
   PPattern: PNepperPattern;
@@ -96,22 +97,12 @@ begin
   IsPlaying := True;
 end;
 
-procedure SetFreq(const Channel: Byte; const Freq: Integer);
+procedure SetFreq(const Channel: Byte; const Freq: ShortInt);
 var
   Reg: PAdlibRegA0B8;
 begin
   Reg := @FreqRegs[Channel];
   SetRegFreq(Channel, FreqRegsBack[Channel].Freq + Freq);
-  if Reg^.Freq > ADLIB_FREQ_TABLE[13] then
-  begin
-    SetRegFreq(Channel, ADLIB_FREQ_TABLE[1]);
-    Reg^.Octave := Reg^.Octave + 1;
-  end else
-  if Reg^.Freq < ADLIB_FREQ_TABLE[1] then
-  begin
-    SetRegFreq(Channel, ADLIB_FREQ_TABLE[13]);
-    Reg^.Octave := Reg^.Octave - 1;
-  end;
   WriteNoteReg(Channel, Reg);
 end;
 
@@ -177,30 +168,45 @@ procedure Play;
   end;
 
   procedure Vibrato;
-  begin
+  begin 
+    if CurTicks = 0 then
+    begin
+      if Byte(PCell^.Note) <> 0 then
+        LastNoteTimerList[CurChannel] := 0;
+    end;
     if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
       LastNoteTimerList[CurChannel] := 0;
     TmpByte := GetEffectReady;
-    SetFreq(CurChannel, SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] * 4 div ($10 - TNepperEffectValue(TmpByte).V2));
-    Inc(LastNoteTimerList[CurChannel], High(LastNoteTimerList) div CurSpeed + CurSpeed * TNepperEffectValue(TmpByte).V1);
+    SetFreq(CurChannel, SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(SPEED_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2));
+    Inc(LastNoteTimerList[CurChannel], (High(SPEED_TABLE) div CurSpeed div 4) * (TNepperEffectValue(TmpByte).V1 + 1));
   end;
 
   procedure Tremolo;
   begin
+    if CurTicks = 0 then
+    begin
+      if Byte(PCell^.Note) <> 0 then
+        LastNoteTimerList[CurChannel] := 0;
+    end;
     if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
       LastNoteTimerList[CurChannel] := 0;
     TmpByte := GetEffectReady;
-    I := SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
-    Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + I, $3F), 0);
-    Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total) + I, $3F), 0);
-    Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total) + I, $3F), 0);
-    Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + I, $3F), 0);
-    Inc(LastNoteTimerList[CurChannel], High(LastNoteTimerList) div CurSpeed + CurSpeed * TNepperEffectValue(TmpByte).V1);
+    Short := SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(SPEED_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
+    Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + Short, $3F), 0);
+    Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total) + Short, $3F), 0);
+    Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total) + Short, $3F), 0);
+    Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + Short, $3F), 0);
+    Inc(LastNoteTimerList[CurChannel], (High(SPEED_TABLE) div CurSpeed div 4) * (TNepperEffectValue(TmpByte).V1 + 1));
     Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
   end;
 
   procedure Tremor;
   begin
+    if CurTicks = 0 then
+    begin
+      if Byte(PCell^.Note) <> 0 then
+        LastNoteTimerList[CurChannel] := 0;
+    end;
     TmpByte := GetEffectReady;
     I := LastNoteTimerList[CurChannel] mod (TNepperEffectValue(TmpByte).V1 + TNepperEffectValue(TmpByte).V2);
     if I < TNepperEffectValue(TmpByte).V1 then
