@@ -72,7 +72,12 @@ y: Depth.
 This command causes the volume to remain normal for 'x' ticks, then fades the
 volume to zero for 'y' ticks.
 
-[ZF0] START RELEASE PHASE
+[ZF0] STOP SOUND
+----------------
+This command causes the track volume to fade down immediately.
+Note that it nulls current Attack rate, Decay rate, Sustain level, and Release rate.
+
+[ZF4] START RELEASE PHASE
 -------------------------
 This command starts the release phase of note.
 
