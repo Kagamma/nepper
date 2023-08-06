@@ -159,9 +159,9 @@ var
   KBFlags: Byte;
 
 procedure WaitForInput;
-function IsCtrl: Boolean;
-function IsAlt: Boolean;
-function IsShift: Boolean;
+function IsCtrl: ByteBool;
+function IsAlt: ByteBool;
+function IsShift: ByteBool;
 
 implementation
 
@@ -181,19 +181,19 @@ asm
   mov KBFlags,al
 end;
 
-function IsCtrl: Boolean; assembler;
+function IsCtrl: ByteBool; assembler;
 asm
   mov al,KBFlags
   and al,$4
 end;
 
-function IsAlt: Boolean; assembler;
+function IsAlt: ByteBool; assembler;
 asm
   mov al,KBFlags
   and al,$8
 end;
 
-function IsShift: Boolean; assembler;
+function IsShift: ByteBool; assembler;
 asm
   mov al,KBFlags
   and al,$3

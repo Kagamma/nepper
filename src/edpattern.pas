@@ -215,8 +215,8 @@ end;
 procedure RenderTexts;
 begin      
   WriteText(0, 0, $1A, 'PATTERN EDIT');
-  WriteText(0, 23, $0A, '[TAB] Song [INS-DEL] I/D [<>] Instr.sel   [SF-UP/DN] Step   [F4-F6] Cut/Cpy/P No', 80);
-  WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit     [+-] Pattern.sel [SF-LF/RN] Octave [F7-F9] Cut/Cpy/P Ef', 80);
+  WriteText(0, 23, $0A, '[TAB] Song [INS-DEL] I/D  [<>] Instr.sel   [SF-UP/DN] Step   [CTL-X/C/V] Ct/Cp/P', 80);
+  WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit mode [+-] Pattern.sel [SF-LF/RN] Octave', 80);
 end;
 
 procedure LoopEditPattern;
@@ -318,6 +318,8 @@ var
 
   procedure EditTone;
   begin
+    if IsCtrl then
+      Exit;
     case KBInput.CharCode of
       'z':
         begin
@@ -488,7 +490,6 @@ var
       Clipbrd[I].Effect := PC^.Cells[I].Effect;
       Word(PC^.Cells[I].Effect) := 0;
     end;
-    RenderPatternInfoOneChannel(CurChannel);
   end;
 
   procedure PasteEffects;
@@ -499,7 +500,6 @@ var
     begin
       PC^.Cells[I].Effect := Clipbrd[I].Effect;
     end;
-    RenderPatternInfoOneChannel(CurChannel);
   end;
 
 begin
@@ -603,29 +603,37 @@ begin
           EdPattern.RenderPatternInfo;
           Screen.SetCursorPosition(OldCursorX, OldCursorY);
         end;
-      SCAN_F4:
+      SCAN_X:
         begin
-          CutNotes;
+          if IsCtrl then
+          begin
+            if CurCellPart = 0 then
+              CutNotes
+            else
+              CutEffects;
+            RenderPatternInfoOneChannel(CurChannel);
+          end;
         end;
-      SCAN_F5:
+      SCAN_C:
         begin
-          CopyNotes;
+          if IsCtrl then
+          begin
+            if CurCellPart = 0 then
+              CopyNotes
+            else
+              CopyEffects;
+          end;
         end;
-      SCAN_F6:
+      SCAN_V:
         begin
-          PasteNotes;
-        end;
-      SCAN_F7:
-        begin
-          CutEffects;
-        end;
-      SCAN_F8:
-        begin
-          CopyEffects;
-        end;
-      SCAN_F9:
-        begin
-          PasteEffects;
+          if IsCtrl then
+          begin
+            if CurCellPart = 0 then
+              PasteNotes
+            else
+              PasteEffects;
+            RenderPatternInfoOneChannel(CurChannel);
+          end;
         end;
       SCAN_SPACE:
         begin

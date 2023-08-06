@@ -21,7 +21,9 @@ uses
 procedure InputText(var S: String; const MaxLen: Byte; const IsHex: Boolean = False);
 var
   Len: Byte;
-begin
+begin 
+  if IsCtrl then
+    Exit;
   Len := Length(S);
   case KBInput.ScanCode of
     SCAN_LEFT:
@@ -102,6 +104,8 @@ procedure InputText2(var S: String; const MaxLen: Byte; const IsHex: Boolean = F
 var
   Len: Byte;
 begin
+  if IsCtrl then
+    Exit;
   Len := Length(S);
   case KBInput.ScanCode of
     SCAN_LEFT:
