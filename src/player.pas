@@ -92,6 +92,7 @@ begin
   end;
   CleanUpStates;
   Move(NepperRec.Instruments[0], Instruments[0], SizeOf(Instruments));
+  InstallTimer(50);
   IsPlaying := True;
 end;
 
@@ -285,6 +286,11 @@ AtBeginning:
             begin
               case Byte(Word(PCell^.Effect)) of
                 $F0: // Stop note
+                  begin
+                    Adlib.NoteClear(CurChannel);
+                    Word(LastEffectList[CurChannel]) := 0;
+                  end;
+                $F4: // Fade note
                   begin
                     Adlib.NoteOff(CurChannel);
                     Word(LastEffectList[CurChannel]) := 0;

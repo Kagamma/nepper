@@ -46,7 +46,6 @@ begin
   if CurChannel > NepperRec.ChannelCount - 1 then
     CurChannel := NepperRec.ChannelCount - 1;
   CurCellPart := 0;
-  CurOctave := 4;
 end;
 
 procedure WriteTextSync(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
@@ -91,7 +90,8 @@ end;
 
 procedure RenderStep; inline;
 begin
-  WriteText(77, 9, $0F, Char(CurStep + Byte('0')));
+  HexStrFast2(CurStep, GS2);
+  WriteText(77, 9, $0F, GS2);
 end;
 
 // Time critical function, process all pattern data to a buffer for fast scrolling
@@ -278,6 +278,7 @@ var
       PC^.Cells[CurCell].InstrumentIndex := CurInstrIndex;
       if (Note = 0) and (Octave = 0) then
       begin
+        PC^.Cells[CurCell].InstrumentIndex := 0;
         WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE)    , PATTERN_SCREEN_START_Y + CurCell - Anchor, COLOR_LABEL, '---', 3);
         WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + 3, PATTERN_SCREEN_START_Y + CurCell - Anchor, $07, '00', 2);
       end else
@@ -712,7 +713,7 @@ begin
     case KBInput.ScanCode of
       SCAN_UP:
         begin
-          if CurStep < 9 then
+          if CurStep < $3F then
           begin
             Inc(CurStep);
             RenderStep;

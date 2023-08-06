@@ -137,6 +137,7 @@ type
     Operators: array[0..3] of TAdlibInstrumentOperator; // 4 operators
     AlgFeedback: TAdlibRegC0C8;
     FineTune: ShortInt;
+    Is4Op: Boolean;
     Name: String[20];
   end;
 

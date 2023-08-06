@@ -35,7 +35,6 @@ var
   CurInstrPos: Byte = 0;
   TestNote: TNepperNote;
   MenuList: array[0..53] of TEdInstrMenuItem;
-  Is4Channel: Boolean = True;
 
 procedure ResetParams;
 begin                           
@@ -148,7 +147,7 @@ begin
   Str(TestNote.Octave, S);
   WriteText(77, 22, $0F, ADLIB_NOTESYM_TABLE[TestNote.Note]);
   WriteText(79, 22, $0F, S);
-  if Adlib.IsOPL3Enabled and Is4Channel then
+  if Adlib.IsOPL3Enabled and CurInstr^.Is4Op then
     WriteText(77, 21, $0F, '4')
   else
     WriteText(77, 21, $0F, '2');
@@ -565,7 +564,7 @@ begin
           end;
         SCAN_SPACE:
           begin
-            if Is4Channel then
+            if CurInstr^.Is4Op then
               V := 8
             else
               V := 5;
@@ -590,7 +589,7 @@ begin
           end;
         SCAN_F10:
           begin
-            Is4Channel := not Is4Channel;
+            CurInstr^.Is4Op := not CurInstr^.Is4Op;
             RenderInstrInfo;
           end
         else
