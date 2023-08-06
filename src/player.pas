@@ -175,6 +175,73 @@ procedure Play;
     Word(LastEffectList[CurChannel]) := Result;
     LastEffectList[CurChannel].Effect := PCell^.Effect.Effect;
   end;
+
+  procedure Vibrato;
+  begin
+    if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
+      LastNoteTimerList[CurChannel] := 0;
+    TmpByte := GetEffectReady;
+    SetFreq(CurChannel, SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] * 4 div ($10 - TNepperEffectValue(TmpByte).V2));
+    Inc(LastNoteTimerList[CurChannel], High(LastNoteTimerList) div CurSpeed + CurSpeed * TNepperEffectValue(TmpByte).V1);
+  end;
+
+  procedure Tremolo;
+  begin
+    if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
+      LastNoteTimerList[CurChannel] := 0;
+    TmpByte := GetEffectReady;
+    I := SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
+    Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + I, $3F), 0);
+    Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total) + I, $3F), 0);
+    Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total) + I, $3F), 0);
+    Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + I, $3F), 0);
+    Inc(LastNoteTimerList[CurChannel], High(LastNoteTimerList) div CurSpeed + CurSpeed * TNepperEffectValue(TmpByte).V1);
+    Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+  end;
+
+  procedure Tremor;
+  begin
+    TmpByte := GetEffectReady;
+    I := LastNoteTimerList[CurChannel] mod (TNepperEffectValue(TmpByte).V1 + TNepperEffectValue(TmpByte).V2);
+    if I < TNepperEffectValue(TmpByte).V1 then
+    begin
+      Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total;
+      Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total;
+      Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total;
+      Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total;
+    end else
+    begin
+      Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := $3F;
+      Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := $3F;
+      Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := $3F;
+      Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := $3F;
+    end;
+    Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+    Inc(LastNoteTimerList[CurChannel]);
+  end;
+
+  procedure TonePortamento;
+  begin
+    TmpByte := GetEffectReady;
+    if (LastNoteList[CurChannel].Octave < LastNoteFutureList[CurChannel].Octave) or ((LastNoteList[CurChannel].Octave = LastNoteFutureList[CurChannel].Octave) and (LastNoteList[CurChannel].Note < LastNoteFutureList[CurChannel].Note)) then
+      SlideFreqUpdate(CurChannel, TmpByte)
+    else
+    if (LastNoteList[CurChannel].Octave > LastNoteFutureList[CurChannel].Octave) or ((LastNoteList[CurChannel].Octave = LastNoteFutureList[CurChannel].Octave) and (LastNoteList[CurChannel].Note > LastNoteFutureList[CurChannel].Note)) then
+      SlideFreqUpdate(CurChannel, -TmpByte);
+  end;
+
+  procedure FreqSlideUp;
+  begin
+    TmpByte := GetEffectReady;
+    SlideFreq(CurChannel, TmpByte);
+  end;
+
+  procedure FreqSlideDown;
+  begin
+    TmpByte := GetEffectReady;
+    SlideFreq(CurChannel, -TmpByte);
+  end;
+
 label
   AtBeginning;
 begin
@@ -203,11 +270,7 @@ AtBeginning:
           end;
         '4': // Vibrato
           begin
-            if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
-              LastNoteTimerList[CurChannel] := 0;
-            TmpByte := GetEffectReady;
-            SetFreq(CurChannel, SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] * 4 div ($10 - TNepperEffectValue(TmpByte).V2));
-            Inc(LastNoteTimerList[CurChannel], High(LastNoteTimerList) div CurSpeed + CurSpeed * TNepperEffectValue(TmpByte).V1);
+            Vibrato;
           end;
         '9': // Volume
           begin
@@ -249,36 +312,11 @@ AtBeginning:
           end;
         'M': // Tremolo
           begin
-            if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
-              LastNoteTimerList[CurChannel] := 0;
-            TmpByte := GetEffectReady;
-            I := SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(LastNoteTimerList) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
-            Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + I, $3F), 0);
-            Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total) + I, $3F), 0);
-            Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total) + I, $3F), 0);
-            Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + I, $3F), 0);
-            Inc(LastNoteTimerList[CurChannel], High(LastNoteTimerList) div CurSpeed + CurSpeed * TNepperEffectValue(TmpByte).V1);
-            Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+            Tremolo;
           end;
         'N': // Tremor
           begin
-            TmpByte := GetEffectReady;
-            I := LastNoteTimerList[CurChannel] mod (TNepperEffectValue(TmpByte).V1 + TNepperEffectValue(TmpByte).V2);
-            if I < TNepperEffectValue(TmpByte).V1 then
-            begin
-              Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total;
-              Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total;
-              Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total;
-              Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total;
-            end else
-            begin
-              Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := $3F;
-              Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := $3F;
-              Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := $3F;
-              Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := $3F;
-            end;
-            Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
-            Inc(LastNoteTimerList[CurChannel]);
+            Tremor;
           end;
         'Z':
           begin
@@ -372,22 +410,15 @@ AtBeginning:
       case Char(PCell^.Effect.Effect) of
         '1': // Freq slide up
           begin
-            TmpByte := GetEffectReady;
-            SlideFreq(CurChannel, TmpByte);
+            FreqSlideUp;
           end;
         '2': // Freq slide down
           begin
-            TmpByte := GetEffectReady;
-            SlideFreq(CurChannel, -TmpByte);
+            FreqSlideDown;
           end;
         '3': // Tone portamento
           begin
-            TmpByte := GetEffectReady;
-            if (LastNoteList[CurChannel].Octave < LastNoteFutureList[CurChannel].Octave) or ((LastNoteList[CurChannel].Octave = LastNoteFutureList[CurChannel].Octave) and (LastNoteList[CurChannel].Note < LastNoteFutureList[CurChannel].Note)) then
-              SlideFreqUpdate(CurChannel, TmpByte)
-            else
-            if (LastNoteList[CurChannel].Octave > LastNoteFutureList[CurChannel].Octave) or ((LastNoteList[CurChannel].Octave = LastNoteFutureList[CurChannel].Octave) and (LastNoteList[CurChannel].Note > LastNoteFutureList[CurChannel].Note)) then
-              SlideFreqUpdate(CurChannel, -TmpByte);
+            TonePortamento;
           end;
       end;
     end;
