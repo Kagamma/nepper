@@ -75,7 +75,8 @@ volume to zero for 'y' ticks.
 [ZF0] STOP SOUND
 ----------------
 This command causes the track volume to fade down immediately.
-Note that it nulls current Attack rate, Decay rate, Sustain level, and Release rate.
+Note that it nulls current Attack rate, Decay rate, Sustain level, and Release
+rate.
 
 [ZF4] START RELEASE PHASE
 -------------------------
