@@ -607,7 +607,7 @@ begin
                     if TestNote.Octave < ADLIB_MAX_OCTAVE - 1 then
                     begin
                       TestNote.Octave := TestNote.Octave + 1;
-                      TestNote.Note := 0;
+                      TestNote.Note := 1;
                     end;
                   end;
                   Str(TestNote.Octave, S);
