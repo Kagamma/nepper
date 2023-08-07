@@ -40,12 +40,14 @@ var
   IsEditMode: Boolean = True;
   GS2: String2;
   GS3: String3;
+  IsMarked: Boolean = False;
 
 procedure ResetParams;
 begin
   if CurChannel > NepperRec.ChannelCount - 1 then
     CurChannel := NepperRec.ChannelCount - 1;
   CurCellPart := 0;
+  IsMarked := False;
 end;
 
 procedure WriteTextSync(const X, Y, Attr: Byte; const S: String80; MaxLen: Byte = 0);
@@ -88,10 +90,21 @@ begin
   WriteText(36, 9, $F, NepperRec.Instruments[CurInstrIndex].Name, 20);
 end;
 
-procedure RenderStep; inline;
+procedure RenderStep;
 begin
   HexStrFast2(CurStep, GS2);
   WriteText(77, 9, $0F, GS2);
+end;
+
+procedure RenderMark;
+begin
+  if IsMarked then
+  begin
+    HexStrFast2(ClipbrdCellStart, GS2);
+    WriteText(72, 22, 3, 'Mark:');
+    WriteText(77, 22, 3, GS2);
+  end else
+    WriteText(72, 22, 3, '', 7);
 end;
 
 procedure RenderChannelStatus;
@@ -230,7 +243,7 @@ procedure RenderTexts;
 begin      
   WriteText(0, 0, $1A, 'PATTERN EDIT');
   WriteText(0, 23, $0A, '[TAB] Song [INS-DEL] I/D  [<>] Instr.sel   [SF-UP/DN] Step   [CTL-X/C/V] Ct/Cp/P', 80);
-  WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit mode [+-] Pattern.sel [SF-LF/RN] Octave', 80);
+  WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit mode [+-] Pattern.sel [SF-LF/RN] Octave [F5] Copy mark', 80);
 end;
 
 procedure LoopEditPattern;
@@ -450,59 +463,146 @@ var
     end;
   end;
 
+  procedure DisableMark;
+  begin
+    IsMarked := False;
+    RenderMark;
+  end;
+
+  procedure EnableMark;
+  begin
+    IsMarked := True;
+    ClipbrdCellStart := CurCell;
+    RenderMark;
+  end;
+
+  procedure PlotMark;
+  begin
+    if not IsMarked then
+    begin
+      EnableMark;
+    end else
+    begin
+      DisableMark;
+    end;
+  end;
+
   procedure CopyNotes;
   var
     I: Byte;
-  begin
-    for I := 0 to $3F do
+    procedure CopyNote;
     begin
       ClipbrdCells[I].Note := PC^.Cells[I].Note;
       ClipbrdCells[I].InstrumentIndex := PC^.Cells[I].InstrumentIndex;
+    end;
+  begin
+    if not IsMarked then
+    begin 
+      Clipbrd.ClipbrdCellStart := -1;
+      for I := 0 to $3F do
+      begin
+        CopyNote
+      end;
+    end else
+    begin
+      SwapIfBigger(Clipbrd.ClipbrdCellStart, Clipbrd.ClipbrdCellEnd);
+      for I := Clipbrd.ClipbrdCellStart to Clipbrd.ClipbrdCellEnd do
+      begin
+        CopyNote;
+      end;
     end;
   end;
 
   procedure CutNotes;
   var
     I: Byte;
-  begin
-    for I := 0 to $3F do
+    procedure CutNote;
     begin
       ClipbrdCells[I].Note := PC^.Cells[I].Note;
       ClipbrdCells[I].InstrumentIndex := PC^.Cells[I].InstrumentIndex;
       Byte(PC^.Cells[I].Note) := 0;
       PC^.Cells[I].InstrumentIndex := 0;
     end;
-    RenderPatternInfoOneChannel(CurChannel);
+  begin
+    if not IsMarked then
+    begin
+      Clipbrd.ClipbrdCellStart := -1;
+      for I := 0 to $3F do
+      begin
+        CutNote;
+      end;
+    end else
+    begin
+      SwapIfBigger(Clipbrd.ClipbrdCellStart, Clipbrd.ClipbrdCellEnd);
+      for I := Clipbrd.ClipbrdCellStart to Clipbrd.ClipbrdCellEnd do
+      begin
+        CutNote;
+      end;
+    end;
   end;
 
   procedure PasteNotes;
   var
     I: Byte;
   begin
-    for I := 0 to $3F do
+    if Clipbrd.ClipbrdCellStart >= 0 then
     begin
-      PC^.Cells[I].Note := ClipbrdCells[I].Note;
-      PC^.Cells[I].InstrumentIndex := ClipbrdCells[I].InstrumentIndex;
+      for I := 0 to Clipbrd.ClipbrdCellEnd - Clipbrd.ClipbrdCellStart do
+      begin
+        PC^.Cells[CurCell + I].Note := ClipbrdCells[I + Clipbrd.ClipbrdCellStart].Note;
+        PC^.Cells[CurCell + I].InstrumentIndex := ClipbrdCells[I + Clipbrd.ClipbrdCellStart].InstrumentIndex;
+        if I + CurCell >= $3F then
+          Break;
+      end;
+    end else
+    begin
+      for I := 0 to $3F do
+      begin    
+        PC^.Cells[CurCell + I].Note := ClipbrdCells[I].Note;
+        PC^.Cells[CurCell + I].InstrumentIndex := ClipbrdCells[I].InstrumentIndex;
+        if I + CurCell >= $3F then
+          Break;
+      end;
     end;
-    RenderPatternInfoOneChannel(CurChannel);
   end;
 
   procedure CopyEffects;
   var
     I: Byte;
   begin
-    for I := 0 to $3F do
-      ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
+    if not IsMarked then
+    begin
+      Clipbrd.ClipbrdCellStart := -1;
+      for I := 0 to $3F do 
+        ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
+    end else
+    begin
+      SwapIfBigger(Clipbrd.ClipbrdCellStart, Clipbrd.ClipbrdCellEnd);
+      for I := Clipbrd.ClipbrdCellStart to Clipbrd.ClipbrdCellEnd do
+        ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
+    end;
   end;
 
   procedure CutEffects;
   var
     I: Byte;
   begin
-    for I := 0 to $3F do
+    if not IsMarked then
     begin
-      ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
-      Word(PC^.Cells[I].Effect) := 0;
+      Clipbrd.ClipbrdCellStart := -1;
+      for I := 0 to $3F do
+      begin
+        ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
+        Word(PC^.Cells[I].Effect) := 0;
+      end;
+    end else
+    begin
+      SwapIfBigger(Clipbrd.ClipbrdCellStart, Clipbrd.ClipbrdCellEnd);
+      for I := Clipbrd.ClipbrdCellStart to Clipbrd.ClipbrdCellEnd do
+      begin
+        ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
+        Word(PC^.Cells[I].Effect) := 0;
+      end;
     end;
   end;
 
@@ -510,10 +610,53 @@ var
   var
     I: Byte;
   begin
-    for I := 0 to $3F do
+    if Clipbrd.ClipbrdCellStart >= 0 then
     begin
-      PC^.Cells[I].Effect := ClipbrdCells[I].Effect;
+      for I := 0 to Clipbrd.ClipbrdCellEnd - Clipbrd.ClipbrdCellStart do
+      begin
+        PC^.Cells[CurCell + I].Effect := ClipbrdCells[I + Clipbrd.ClipbrdCellStart].Effect;
+        if I + CurCell >= $3F then
+          Break;
+      end;
+    end else
+    begin
+      for I := 0 to $3F do
+      begin
+        PC^.Cells[CurCell + I].Effect := ClipbrdCells[I].Effect;
+        if I + CurCell >= $3F then
+          Break;
+      end;
     end;
+  end; 
+
+  procedure DoCut;
+  begin   
+    Clipbrd.ClipbrdCellEnd := CurCell;
+    if CurCellPart = 0 then
+      CutNotes
+    else
+      CutEffects;
+    DisableMark;
+    RenderPatternInfoOneChannel(CurChannel);
+  end;
+
+  procedure DoCopy;
+  begin  
+    Clipbrd.ClipbrdCellEnd := CurCell;
+    if CurCellPart = 0 then
+      CopyNotes
+    else
+      CopyEffects; 
+    DisableMark;
+  end;
+
+  procedure DoPaste;
+  begin
+    if CurCellPart = 0 then
+      PasteNotes
+    else
+      PasteEffects;
+    RenderPatternInfoOneChannel(CurChannel);
   end;
 
 begin
@@ -558,10 +701,12 @@ begin
               Dec(CurChannel);
               Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5)+ (Input.InputCursor - 1), PATTERN_SCREEN_START_Y + CurCell - Anchor);
               RenderInstrument;
+              DisableMark;
             end;
           end else
           begin
             CurCellPart := 0;
+            DisableMark;
             Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor);
           end;
         end;
@@ -575,10 +720,12 @@ begin
               Input.InputCursor := 1;
               Inc(CurChannel);
               RenderInstrument;
+              DisableMark;
             end;
           end else
           begin
             CurCellPart := 1;
+            DisableMark;
           end;
           Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor);
         end;
@@ -617,36 +764,29 @@ begin
           EdPattern.RenderPatternInfo;
           Screen.SetCursorPosition(OldCursorX, OldCursorY);
         end;
+      SCAN_F5:
+        begin
+          PlotMark;
+        end;
       SCAN_X:
         begin
           if IsCtrl then
           begin
-            if CurCellPart = 0 then
-              CutNotes
-            else
-              CutEffects;
-            RenderPatternInfoOneChannel(CurChannel);
+            DoCut;
           end;
         end;
       SCAN_C:
         begin
           if IsCtrl then
           begin
-            if CurCellPart = 0 then
-              CopyNotes
-            else
-              CopyEffects;
+            DoCopy;
           end;
         end;
       SCAN_V:
         begin
           if IsCtrl then
           begin
-            if CurCellPart = 0 then
-              PasteNotes
-            else
-              PasteEffects;
-            RenderPatternInfoOneChannel(CurChannel);
+            DoPaste;
           end;
         end;
       SCAN_SPACE:

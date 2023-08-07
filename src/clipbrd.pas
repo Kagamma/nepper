@@ -9,8 +9,8 @@ uses
 
 var
   ClipbrdCells: TNepperChannelCells;
-  ClipbrdCellStart,
-  ClipbrdCellEnd: Byte;
+  ClipbrdCellStart: ShortInt = -1;
+  ClipbrdCellEnd: ShortInt;
   ClipbrdInstr: TAdlibInstrument;
 
 implementation

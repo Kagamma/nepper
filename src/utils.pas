@@ -26,6 +26,7 @@ function HexStrFast3(const V: Word): String3; overload;
 function FindCharPos(const S: String; const C: Char): Byte;
 function Min(const V1, V2: Integer): Integer; inline;
 function Max(const V1, V2: Integer): Integer; inline;
+procedure SwapIfBigger(var V1, V2: ShortInt);
 
 implementation
 
@@ -120,6 +121,18 @@ begin
     Result := V1
   else
     Result := V2;
+end;
+
+procedure SwapIfBigger(var V1, V2: ShortInt);
+var
+  Tmp: ShortInt;
+begin
+  if V1 > V2 then
+  begin
+    Tmp := V1;
+    V1 := V2;
+    V2 := Tmp;
+  end;
 end;
 
 end.
