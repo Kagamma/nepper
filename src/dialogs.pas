@@ -17,7 +17,7 @@ uses
   Screen, Keyboard, Input;
 
 var
-  HelpData: array of String80;
+  HelpData: ^String80;
   HelpAnchor: Integer = 0;
   HelpSize: Integer = 0;
   HelpFileNameOld: String80;
@@ -92,11 +92,11 @@ procedure ShowHelpDialog(const FileName: String40);
     begin
       HelpAnchor := 0;
       HelpSize := 0;
-      SetLength(HelpData, 50);
+      HelpData := AllocMem(SizeOf(String80) * 100);
       while not EOF(F) do
       begin
-        if Length(HelpData) <= HelpSize then
-          SetLength(HelpData, Length(HelpData) + 10);
+        if MemSize(HelpData) div SizeOf(String80) <= HelpSize then
+          ReAllocMem(HelpData, MemSize(HelpData) + SizeOf(String80) * 10);
         Readln(F, HelpData[HelpSize]);
         Inc(HelpSize);
       end;
