@@ -15,5 +15,9 @@ var
 
 implementation
 
+initialization
+  FillChar(ClipbrdCells[0], SizeOf(ClipbrdInstr), 0);
+  FillChar(ClipbrdInstr.Operators[0], SizeOf(ClipbrdInstr), 0);
+
 end.
 

@@ -17,7 +17,7 @@ procedure Loop;
 implementation
 
 uses
-  Dialogs;
+  Dialogs, Clipbrd;
 
 const
   OP1_X = 16;
@@ -586,6 +586,19 @@ begin
             RenderInstrInfo;
             Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
             Continue;
+          end;
+        SCAN_C:
+          begin
+            if IsCtrl then
+              Clipbrd.ClipbrdInstr := CurInstr^;
+          end;
+        SCAN_V:
+          begin
+            if IsCtrl then
+            begin
+              CurInstr^ := Clipbrd.ClipbrdInstr;
+              RenderInstrInfo;
+            end;
           end;
         SCAN_F10:
           begin
