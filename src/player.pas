@@ -21,11 +21,23 @@ uses
   Formats, EdInstr, Screen, Utils, Timer;
 
 const
-  SPEED_TABLE: array[0..63] of ShortInt = (
-    0, 12, 24, 37, 48, 60, 70, 80, 90, 98, 106, 112, 117, 122, 125, 126,
-    127, 126, 125, 122, 117, 112, 106, 98, 90, 80, 70, 60, 48, 37, 24, 12,
-    0, -12, -24, -37, -48, -60, -70, -80, -90, -98, -106, -112, -117, -122, -125, -126,
-    -127, -126, -125, -122, -117, -112, -106, -98, -90, -80, -70, -60, -48, -37, -24, -12
+  SINE_TABLE: array[0..255] of ShortInt = (
+    $00, $03, $06, $09, $0C, $10, $13, $16, $19, $1C, $1F, $22, $25, $28, $2B, $2E,
+    $31, $34, $36, $39, $3C, $3F, $41, $44, $47, $49, $4C, $4E, $51, $53, $55, $58,
+    $5A, $5C, $5E, $60, $62, $64, $66, $68, $6A, $6B, $6D, $6F, $70, $72, $73, $74,
+    $75, $77, $78, $79, $7A, $7B, $7B, $7C, $7D, $7D, $7E, $7E, $7E, $7F, $7F, $7F,
+    $7F, $7F, $7F, $7F, $7E, $7E, $7E, $7D, $7C, $7C, $7B, $7A, $79, $78, $77, $76,
+    $75, $74, $73, $71, $70, $6E, $6D, $6B, $69, $67, $66, $64, $62, $60, $5E, $5B,
+    $59, $57, $55, $52, $50, $4D, $4B, $48, $46, $43, $41, $3E, $3B, $38, $35, $33,
+    $30, $2D, $2A, $27, $24, $21, $1E, $1B, $18, $15, $12, $0F, $0B, $08, $05, $02,
+    $FF, $FC, $F9, $F6, $F2, $EF, $EC, $E9, $E6, $E3, $E0, $DD, $DA, $D7, $D4, $D1,
+    $CE, $CB, $C9, $C6, $C3, $C0, $BE, $BB, $B8, $B6, $B3, $B1, $AE, $AC, $AA, $A7,
+    $A5, $A3, $A1, $9F, $9D, $9B, $99, $97, $96, $94, $92, $91, $8F, $8E, $8D, $8B,
+    $8A, $89, $88, $87, $86, $85, $84, $84, $83, $83, $82, $82, $81, $81, $81, $81,
+    $81, $81, $81, $81, $82, $82, $83, $83, $84, $84, $85, $86, $87, $88, $89, $8A,
+    $8B, $8D, $8E, $8F, $91, $92, $94, $96, $97, $99, $9B, $9D, $9F, $A1, $A3, $A5,
+    $A8, $AA, $AC, $AE, $B1, $B3, $B6, $B8, $BB, $BE, $C0, $C3, $C6, $C9, $CB, $CE,
+    $D1, $D4, $D7, $DA, $DD, $E0, $E3, $E6, $E9, $EC, $EF, $F3, $F6, $F9, $FC, $FF
   );
 
 var
@@ -181,8 +193,8 @@ procedure Play;
     if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
       LastNoteTimerList[CurChannel] := 0;
     TmpByte := GetEffectReady;
-    SetFreq(CurChannel, SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(SPEED_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2));
-    Inc(LastNoteTimerList[CurChannel], (High(SPEED_TABLE) div CurSpeed div 4) * (TNepperEffectValue(TmpByte).V1 + 1));
+    SetFreq(CurChannel, SINE_TABLE[LastNoteTimerList[CurChannel] mod (High(SINE_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2));
+    Inc(LastNoteTimerList[CurChannel], High(SINE_TABLE) div (CurSpeed * 4) * (TNepperEffectValue(TmpByte).V1 + 1));
   end;
 
   procedure Tremolo;
@@ -195,12 +207,12 @@ procedure Play;
     if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
       LastNoteTimerList[CurChannel] := 0;
     TmpByte := GetEffectReady;
-    Short := SPEED_TABLE[LastNoteTimerList[CurChannel] mod (High(SPEED_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
+    Short := SINE_TABLE[LastNoteTimerList[CurChannel] mod (High(SINE_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
     Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + Short, $3F), 0);
     Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total) + Short, $3F), 0);
     Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total) + Short, $3F), 0);
     Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + Short, $3F), 0);
-    Inc(LastNoteTimerList[CurChannel], (High(SPEED_TABLE) div CurSpeed div 4) * (TNepperEffectValue(TmpByte).V1 + 1));
+    Inc(LastNoteTimerList[CurChannel], High(SINE_TABLE) div (CurSpeed * 4) * (TNepperEffectValue(TmpByte).V1 + 1));
     Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
   end;
 
