@@ -4,7 +4,7 @@ program nepper;
 
 uses
   Adlib, Keyboard, Input, Screen, Utils, EdInstr, Formats, Timer, Player,
-  Dialogs, EdPattern, EdSong;
+  Dialogs, EdPattern, EdSong, Clipbrd;
 
 begin
   Adlib.Init;

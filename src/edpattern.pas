@@ -18,7 +18,7 @@ procedure Loop;
 implementation
 
 uses
-  Input, Keyboard, Screen, Formats, EdSong, Player, Dialogs;
+  Input, Keyboard, Screen, Formats, EdSong, Player, Dialogs, Clipbrd;
 
 const            
   PATTERN_SCREEN_START_X = 4;
@@ -442,8 +442,8 @@ var
   begin
     for I := 0 to $3F do
     begin
-      Clipbrd[I].Note := PC^.Cells[I].Note;  
-      Clipbrd[I].InstrumentIndex := PC^.Cells[I].InstrumentIndex;
+      ClipbrdCells[I].Note := PC^.Cells[I].Note;
+      ClipbrdCells[I].InstrumentIndex := PC^.Cells[I].InstrumentIndex;
     end;
   end;
 
@@ -453,8 +453,8 @@ var
   begin
     for I := 0 to $3F do
     begin
-      Clipbrd[I].Note := PC^.Cells[I].Note;    
-      Clipbrd[I].InstrumentIndex := PC^.Cells[I].InstrumentIndex;
+      ClipbrdCells[I].Note := PC^.Cells[I].Note;
+      ClipbrdCells[I].InstrumentIndex := PC^.Cells[I].InstrumentIndex;
       Byte(PC^.Cells[I].Note) := 0;
       PC^.Cells[I].InstrumentIndex := 0;
     end;
@@ -467,8 +467,8 @@ var
   begin
     for I := 0 to $3F do
     begin
-      PC^.Cells[I].Note := Clipbrd[I].Note;
-      PC^.Cells[I].InstrumentIndex := Clipbrd[I].InstrumentIndex;
+      PC^.Cells[I].Note := ClipbrdCells[I].Note;
+      PC^.Cells[I].InstrumentIndex := ClipbrdCells[I].InstrumentIndex;
     end;
     RenderPatternInfoOneChannel(CurChannel);
   end;
@@ -478,7 +478,7 @@ var
     I: Byte;
   begin
     for I := 0 to $3F do
-      Clipbrd[I].Effect := PC^.Cells[I].Effect;
+      ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
   end;
 
   procedure CutEffects;
@@ -487,7 +487,7 @@ var
   begin
     for I := 0 to $3F do
     begin
-      Clipbrd[I].Effect := PC^.Cells[I].Effect;
+      ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
       Word(PC^.Cells[I].Effect) := 0;
     end;
   end;
@@ -498,7 +498,7 @@ var
   begin
     for I := 0 to $3F do
     begin
-      PC^.Cells[I].Effect := Clipbrd[I].Effect;
+      PC^.Cells[I].Effect := ClipbrdCells[I].Effect;
     end;
   end;
 

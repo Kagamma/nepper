@@ -89,6 +89,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="EdSong"/>
       </Unit>
+      <Unit>
+        <Filename Value="clipbrd.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Clipbrd"/>
+      </Unit>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
