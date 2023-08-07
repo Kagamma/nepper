@@ -94,6 +94,19 @@ begin
   WriteText(77, 9, $0F, GS2);
 end;
 
+procedure RenderChannelStatus;
+var
+  I: Byte;
+begin
+  for I := 0 to MAX_CHANNELS - 1 do
+  begin
+    if not Player.ChannelEnabledList[I] then
+      WriteText(PATTERN_SCREEN_START_X + PATTERN_CHANNEL_WIDE * I + 1, 10, $C, 'x')
+    else
+      WriteText(PATTERN_SCREEN_START_X + PATTERN_CHANNEL_WIDE * I + 1, 10, $C, ' ');
+  end;
+end;
+
 // Time critical function, process all pattern data to a buffer for fast scrolling
 procedure RenderPatternInfo;
 var
@@ -146,6 +159,7 @@ begin
   RenderPatternIndex;
   RenderInstrument;
   RenderStep;
+  RenderChannelStatus;
 end;
 
 procedure RenderPatternInfoOneChannel(const Channel: Byte);
@@ -685,6 +699,35 @@ begin
   end;
 end;
 
+procedure EnableDisableChannels;
+  procedure SwitchChannelStatus(const V: Byte);
+  begin
+    Player.ChannelEnabledList[V] := not Player.ChannelEnabledList[V];
+    RenderChannelStatus;
+  end;
+begin
+  case KBInput.CharCode of
+    '!':
+      SwitchChannelStatus(0);
+    '@':
+      SwitchChannelStatus(1);
+    '#':
+      SwitchChannelStatus(2);
+    '$':
+      SwitchChannelStatus(3);
+    '%':
+      SwitchChannelStatus(4);
+    '^':
+      SwitchChannelStatus(5);
+    '&':
+      SwitchChannelStatus(6);
+    '*':
+      SwitchChannelStatus(7);
+    '(':
+      SwitchChannelStatus(8);
+  end;
+end;
+
 function LoopEditOctave: Boolean;
 var
   PC: PNepperChannel;
@@ -750,6 +793,7 @@ begin
     if LoopEditOctave then Continue;
     if LoopEditStep then Continue;
     LoopEditPattern;
+    EnableDisableChannels;
     case KBInput.ScanCode of
       SCAN_ENTER:
         begin

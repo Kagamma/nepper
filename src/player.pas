@@ -4,8 +4,12 @@ unit Player;
 
 interface
 
+uses
+  Adlib;
+
 var
-  IsPlaying: Boolean = False;
+  IsPlaying: Boolean = False; 
+  ChannelEnabledList: array[0..MAX_CHANNELS - 1] of Boolean;
 
 procedure Start(const PatternIndex: Byte = 0);
 procedure Play;
@@ -14,7 +18,7 @@ procedure Stop;
 implementation
 
 uses
-  Adlib, Formats, EdInstr, Screen, Utils, Timer;
+  Formats, EdInstr, Screen, Utils, Timer;
 
 const
   SPEED_TABLE: array[0..63] of ShortInt = (
@@ -364,6 +368,12 @@ AtBeginning:
   // Play note
   for CurChannel := 0 to NepperRec.ChannelCount - 1 do
   begin
+    if not ChannelEnabledList[CurChannel] then
+    begin
+      if not IsInstr then
+        Adlib.NoteClear(CurChannel);
+      Continue;
+    end;
     if CurTicks = LastNoteDelayList[CurChannel] then
     begin
       PChannel := @PPattern^[CurChannel];
@@ -424,7 +434,13 @@ AtBeginning:
           end;
         '3': // Tone portamento
           begin
-            TonePortamento;
+            if not ChannelEnabledList[CurChannel] then
+            begin
+              Continue;
+            end else
+            begin
+              TonePortamento;
+            end;
           end;
       end;
     end;
@@ -489,6 +505,10 @@ begin
   CleanUpStates;
   Screen.WriteText(63, 0, $1F, '', 17);
 end;
+
+initialization
+  for I := 0 to High(ChannelEnabledList) do
+    ChannelEnabledList[I] := True;
 
 end.
 
