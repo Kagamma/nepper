@@ -239,29 +239,17 @@ var
           end;
         1:
           begin
-            if I = 0 then
-              Volume.Total := V
-            else
-            if I = 3 then
+            if (I = 0) or (I = 3) then
               Volume.Total := V;
           end;
         2:
           begin     
-            if I = 1 then
-              Volume.Total := V
-            else
-            if I = 3 then
+            if (I = 1) or (I = 3) then
               Volume.Total := V;
           end;
         3:
           begin    
-            if I = 0 then
-              Volume.Total := V
-            else
-            if I = 2 then
-              Volume.Total := V
-            else
-            if I = 3 then
+            if (I = 0) or (I = 2) or (I = 3) then
               Volume.Total := V;
           end;
       end
@@ -269,10 +257,7 @@ var
       case Inst^.AlgFeedback.Alg2 of
         0:
           begin    
-            if I = 0 then
-              Volume.Total := V
-            else
-            if I = 1 then
+            if (I = 0) or (I = 1) then
               Volume.Total := V;
           end;
         1:
