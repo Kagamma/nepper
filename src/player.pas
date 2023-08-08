@@ -78,7 +78,7 @@ begin
   CurTicks := 0;
   CurCell := 0;
   NextCell := 0;
-  CurSpeed := 6;
+  CurSpeed := NepperRec.Speed;
   BD.Vibrato := 1;
   BD.AMDepth := 1;
   Adlib.WriteReg($BD, Byte(BD));
@@ -108,7 +108,7 @@ begin
   end;
   CleanUpStates;
   Move(NepperRec.Instruments[0], Instruments[0], SizeOf(Instruments));
-  InstallTimer(50);
+  InstallTimer(NepperRec.Clock);
   IsPlaying := True;
 end;
 
@@ -189,7 +189,7 @@ procedure Play;
 
   procedure AdjustVolume(const V: Byte);
   begin
-    if NepperRec.IsOPL3 then
+    if NepperRec.IsOPL3 and ((CurChannel <= 2) or (CurChannel >= 6)) then
       case Instruments[PCell^.InstrumentIndex].AlgFeedback.Alg2 of
         0:
           begin

@@ -233,7 +233,7 @@ var
 
   procedure AdjustVolume(const V: Byte);
   begin
-    if IsOPL3Enabled then
+    if IsOPL3Enabled and ((Channel <= 2) or (Channel >= 6)) then
       case Inst^.AlgFeedback.Alg2 of
         0:
           begin     

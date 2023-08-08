@@ -53,6 +53,8 @@ type
     Magic: Word;
     Version: Byte;
     Name: String[40];
+    Speed: Byte;
+    Clock: Byte;
     IsOPL3: Boolean;
     ChannelCount: ShortInt;
     Instruments: array[0..31] of TAdlibInstrument;
@@ -71,7 +73,7 @@ function LoadSong(FileName: String): Boolean;
 implementation
 
 uses
-  Utils;
+  Utils, Player, Timer;
 
 type
   TNepperInstrumentHeader = packed record
@@ -275,6 +277,8 @@ initialization
   for I := 0 to High(NepperRec.Instruments) do
     NepperRec.Instruments[I].AlgFeedback.Panning := 3;
   NepperRec.ChannelCount := 8;
+  NepperRec.Speed := 6;  // Unused for now
+  NepperRec.Clock := 50;
 
 finalization
   for I := 0 to High(Formats.Patterns) do
