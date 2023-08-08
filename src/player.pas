@@ -175,6 +175,46 @@ procedure Play;
     LastEffectList[CurChannel].Effect := PCell^.Effect.Effect;
   end;
 
+  procedure AdjustVolume(const V: Byte);
+  begin
+    if NepperRec.IsOPL3 then
+      case Instruments[PCell^.InstrumentIndex].AlgFeedback.Alg2 of
+        0:
+          begin
+            Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := V;
+          end;
+        1:
+          begin
+            Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := V;
+            Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := V;
+
+          end;
+        2:
+          begin
+            Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := V;
+            Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := V;
+          end;
+        3:
+          begin
+            Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := V;
+            Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := V;
+            Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := V;
+          end;
+      end
+    else
+      case Instruments[PCell^.InstrumentIndex].AlgFeedback.Alg2 of
+        0:
+          begin
+            Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := V;
+            Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := V;
+          end;
+        1:
+          begin
+            Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := V;
+          end;
+      end;
+  end;
+
   procedure Vibrato;
   begin 
     if CurTicks = 0 then
@@ -200,10 +240,7 @@ procedure Play;
       LastNoteTimerList[CurChannel] := 0;
     TmpByte := GetEffectReady;
     Short := SINE_TABLE[LastNoteTimerList[CurChannel] mod (High(SINE_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
-    Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total) + Short, $3F), 0);
-    Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total) + Short, $3F), 0);
-    Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total) + Short, $3F), 0);
-    Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + Short, $3F), 0);
+    AdjustVolume(Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + Short, $3F), 0));
     Inc(LastNoteTimerList[CurChannel], High(SINE_TABLE) div (CurSpeed * 4) * (TNepperEffectValue(TmpByte).V1 + 1));
     Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
   end;
@@ -292,10 +329,7 @@ AtBeginning:
             begin
               Adlib.VolumeModList[CurChannel] := 0;
               TmpByte := $3F - Max(Min(Byte(Word(PCell^.Effect)), $3F), 0);
-              Instruments[PCell^.InstrumentIndex].Operators[0].Volume.Total := TmpByte;
-              Instruments[PCell^.InstrumentIndex].Operators[1].Volume.Total := TmpByte;
-              Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := TmpByte;
-              Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := TmpByte;
+              AdjustVolume(TmpByte);
               Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
             end;
           end;

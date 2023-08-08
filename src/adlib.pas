@@ -227,6 +227,62 @@ var
   Volume: TAdlibReg4055;
   VolumeTmp: ShortInt;
   Alg2: TAdlibRegC0C8;
+
+  procedure AdjustVolume(const V: Byte);
+  begin
+    if IsOPL3Enabled then
+      case Inst^.AlgFeedback.Alg2 of
+        0:
+          begin     
+            if I = 3 then
+              Volume.Total := V;
+          end;
+        1:
+          begin
+            if I = 0 then
+              Volume.Total := V
+            else
+            if I = 3 then
+              Volume.Total := V;
+          end;
+        2:
+          begin     
+            if I = 1 then
+              Volume.Total := V
+            else
+            if I = 3 then
+              Volume.Total := V;
+          end;
+        3:
+          begin    
+            if I = 0 then
+              Volume.Total := V
+            else
+            if I = 2 then
+              Volume.Total := V
+            else
+            if I = 3 then
+              Volume.Total := V;
+          end;
+      end
+    else
+      case Inst^.AlgFeedback.Alg2 of
+        0:
+          begin    
+            if I = 0 then
+              Volume.Total := V
+            else
+            if I = 1 then
+              Volume.Total := V;
+          end;
+        1:
+          begin         
+            if I = 1 then
+              Volume.Total := V;
+          end;
+      end;
+  end;
+
 begin
   if IsOPL3Enabled then
   begin
@@ -241,7 +297,7 @@ begin
       else
       if VolumeTmp > $3F then
         VolumeTmp := $3F;
-      Volume.Total := VolumeTmp;
+      AdjustVolume(VolumeTmp);
 
       if ADLIB_SLOTS_OPL3[Channel, I] <> $FF then
       begin
@@ -271,7 +327,7 @@ begin
       else
       if VolumeTmp > $3F then
         VolumeTmp := $3F;
-      Volume.Total := VolumeTmp;
+      AdjustVolume(VolumeTmp);
 
       WriteReg(ADLIB_SLOTS_OPL2[Channel, I] + $20, Byte(Op^.Effect));
       WriteReg(ADLIB_SLOTS_OPL2[Channel, I] + $40, Byte(Volume));
