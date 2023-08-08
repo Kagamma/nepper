@@ -512,10 +512,7 @@ AtBeginning:
       begin
         CurCell := 0;
       end else
-      begin                                  
-  BD.Vibrato := 1;
-  BD.AMDepth := 1;
-  Adlib.WriteReg($BD, Byte(BD));
+      begin
         CurCell := 0;
         if CurPatternIndex = High(NepperRec.PatternIndices) then
         begin
