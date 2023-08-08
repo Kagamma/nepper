@@ -31,19 +31,19 @@ This command is used together with a note and will slide to its frequency.
 xx: Speed of slide.
 00: Uses the last value.
 
-[5xx] TONE PORTAMENTO
----------------------
-This command executes both Tone portamento with "00" and Volume slide.
-x: Speed of volumeslide up
-y: Speed of slide down
-00: Uses the last value
-
 [4xy] VIBRATO
 -------------
 This command causes the frequency to oscillate.
 x: Speed.
 y: Depth.
 00: Uses the last value.
+
+[5xx] TONE PORTAMENTO
+---------------------
+This command executes both Tone portamento with "00" and Volume slide.
+x: Speed of volumeslide up
+y: Speed of slide down
+00: Uses the last value
 
 [9xx] VOLUME
 ------------
