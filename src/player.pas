@@ -376,24 +376,25 @@ AtBeginning:
           begin
             if CurTicks = 0 then
             begin
-              case Byte(Word(PCell^.Effect)) of
-                $00: // Set tremolo depth
+              case Byte(Word(PCell^.Effect.V1)) of
+                $0: // Set tremolo depth
                   begin
                     BD.AMDepth := PCell^.Effect.V2;
                     Adlib.WriteReg($BD, Byte(BD));
                   end;
-                $01: // Set vibrato depth
+                $1: // Set vibrato depth
                   begin
                     BD.Vibrato := PCell^.Effect.V2;
                     Adlib.WriteReg($BD, Byte(BD));
                   end;
-                $F0: // Stop note
+                $F:
                   begin
-                    Adlib.NoteClear(CurChannel);
-                  end;
-                $F4: // Fade note
-                  begin
-                    Adlib.NoteOff(CurChannel);
+                    case Byte(Word(PCell^.Effect.V2)) of
+                      0: // Stop note
+                        Adlib.NoteClear(CurChannel);
+                      4: // Fade note
+                        Adlib.NoteOff(CurChannel);
+                    end;
                   end;
               end;
             end;
