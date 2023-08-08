@@ -9,8 +9,8 @@ var
 
 procedure InputText(var S: String; const MaxLen: Byte; const IsHex: Boolean = False);
 procedure InputHex2(var S: String; var Value: Byte; const MaxValue: Byte);
-procedure InputHex3(var S: String; var Value: Word; const MaxValue: Word);
-procedure InputYesNo(var S: String; var Value: Byte);        
+procedure InputHex3(var S: String; var Value: Word);
+procedure InputYesNo(var S: String; var Value: Byte);
 procedure InputPanning(var S: String; var Value: Byte);
 
 implementation
@@ -21,7 +21,7 @@ uses
 procedure InputText(var S: String; const MaxLen: Byte; const IsHex: Boolean = False);
 var
   Len: Byte;
-begin 
+begin
   if IsCtrl then
     Exit;
   Len := Length(S);
@@ -59,7 +59,7 @@ begin
         if IsHex then
           Exit;
         if InputCursor > 1 then
-        begin      
+        begin
           KBInput.ScanCode := $FF;
           Dec(InputCursor);
           Delete(S, InputCursor, 1);
@@ -176,7 +176,7 @@ begin
   end;
 end;
 
-procedure InputHex3(var S: String; var Value: Word; const MaxValue: Word);
+procedure InputHex3(var S: String; var Value: Word);
 var
   C: Char;
 begin
@@ -188,7 +188,7 @@ begin
   C := S[1];
   InputText2(S, 4, InputCursor <> 1);
   if KBInput.ScanCode = $FF then
-  begin   
+  begin
     if Length(S) > 3 then
       Delete(S, 2, 1);
     S := UpCase(S);
@@ -209,7 +209,7 @@ begin
         Value := 1;
       end;
     'n':
-      begin         
+      begin
         KBInput.ScanCode := $FF;
         S := 'No ';
         Value := 0;
@@ -225,13 +225,13 @@ begin
         KBInput.ScanCode := $FF;
         S := 'L';
         Value := 1;
-      end;   
+      end;
     'r':
       begin
         KBInput.ScanCode := $FF;
         S := 'R';
         Value := 2;
-      end; 
+      end;
     'c', 'm':
       begin
         KBInput.ScanCode := $FF;

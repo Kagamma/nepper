@@ -666,7 +666,7 @@ begin
   begin
     W := Word(PC^.Cells[CurCell].Effect);
     OldInputCursor := Input.InputCursor;
-    Input.InputHex3(S, W, $FFF);
+    Input.InputHex3(S, W);
     if IsEditMode then
     begin
       Word(PC^.Cells[CurCell].Effect) := W;
