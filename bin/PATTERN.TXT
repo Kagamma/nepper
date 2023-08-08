@@ -49,8 +49,9 @@ x: Speed of slide up
 y: Speed of slide down
 00: Uses the last value
 
-[D00] PATTERN BREAK
+[Dxx] PATTERN BREAK
 This commands break current pattern and jumps to next order.
+xx: The line to play in next order.
 
 [Exx] SET CLOCK FREQUENCY
 -------------------------

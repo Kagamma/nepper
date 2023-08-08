@@ -42,6 +42,7 @@ var
   PCell: PNepperChannelCell;
   CurChannel: Byte;
   CurEffect: Byte;
+  NextCell: Byte;
   CurCell: Byte;
   CurTicks: Byte = 0;
   CurSpeed: Byte = 6; // 40 for fmc?
@@ -76,6 +77,7 @@ begin
   Stop;
   CurTicks := 0;
   CurCell := 0;
+  NextCell := 0;
   CurSpeed := 6;
   BD.Vibrato := 1;
   BD.AMDepth := 1;
@@ -352,7 +354,10 @@ AtBeginning:
         'D': // Pattern break
           begin
             if CurTicks = 0 then
+            begin
               CurCell := $40;
+              NextCell := Byte(Word(PCell^.Effect));
+            end;
           end;
         'E': // BPM
           begin
@@ -510,10 +515,10 @@ AtBeginning:
     begin
       if IsPatternOnly then
       begin
-        CurCell := 0;
+        CurCell := NextCell;
       end else
       begin
-        CurCell := 0;
+        CurCell := NextCell;
         if CurPatternIndex = High(NepperRec.PatternIndices) then
         begin
           Stop;
@@ -540,6 +545,7 @@ AtBeginning:
         Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
         Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
       end;
+      NextCell := 0;
       goto AtBeginning;
     end else
       Inc(CurCell);
