@@ -72,6 +72,18 @@ y: Depth.
 This command causes the volume to remain normal for 'x' ticks, then fades the
 volume to zero for 'y' ticks.
 
+[Z0x] SET TREMOLO DEPTH
+-----------------------
+This command changes the hardware Tremolo depth of all operators.
+0: 1dB
+1: 4.8dB
+
+[Z1x] SET VIBRATO DEPTH
+-----------------------
+This command changes the hardware Vibrato depth of all operators.
+0: 7%
+1: 14%
+
 [ZF0] STOP SOUND
 ----------------
 This command causes the track volume to fade down immediately.

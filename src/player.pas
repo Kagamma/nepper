@@ -41,6 +41,7 @@ var
   PChannel: PNepperChannel;
   PCell: PNepperChannelCell;
   CurChannel: Byte;
+  CurEffect: Byte;
   CurCell: Byte;
   CurTicks: Byte = 0;
   CurSpeed: Byte = 6; // 40 for fmc?
@@ -50,7 +51,7 @@ var
   OctaveByte: Byte;
   LastNoteList: array[0..MAX_CHANNELS - 1] of TNepperNote;
   LastNoteFutureList: array[0..MAX_CHANNELS - 1] of TNepperNote;
-  LastEffectList: array[0..MAX_CHANNELS - 1] of TNepperEffect;
+  LastEffectList: array[0..MAX_CHANNELS - 1, 0..96] of TNepperEffect;
   LastInstrumentList: array[0..MAX_CHANNELS - 1] of Byte;
   LastArpeggioList: array[0..MAX_CHANNELS - 1, 0..1] of Byte;
   LastNoteDelayList: array[0..MAX_CHANNELS - 1] of Byte;
@@ -58,6 +59,7 @@ var
   GS2: String2;
   ColorStatus: Byte;
   Instruments: array[0..31] of TAdlibInstrument;
+  BD: TAdlibRegBD;
 
 procedure CleanUpStates;
 begin
@@ -75,6 +77,9 @@ begin
   CurTicks := 0;
   CurCell := 0;
   CurSpeed := 6;
+  BD.Vibrato := 1;
+  BD.AMDepth := 1;
+  Adlib.WriteReg($BD, Byte(BD));
   if PatternIndex <> $FF then
   begin
     CurPatternIndex := PatternIndex;
@@ -170,9 +175,9 @@ procedure Play;
   begin
     Result := Byte(Word(PCell^.Effect));
     if Result = 0 then
-      Result := Byte(Word(LastEffectList[CurChannel]));
-    Word(LastEffectList[CurChannel]) := Result;
-    LastEffectList[CurChannel].Effect := PCell^.Effect.Effect;
+      Result := Byte(Word(LastEffectList[CurChannel, CurEffect]));
+    Word(LastEffectList[CurChannel, CurEffect]) := Result;
+    LastEffectList[CurChannel, CurEffect].Effect := PCell^.Effect.Effect;
   end;
 
   procedure AdjustVolume(const V: Byte);
@@ -222,7 +227,7 @@ procedure Play;
       if Byte(PCell^.Note) <> 0 then
         LastNoteTimerList[CurChannel] := 0;
     end;
-    if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
+    if LastEffectList[CurChannel, CurEffect].Effect <> PCell^.Effect.Effect then
       LastNoteTimerList[CurChannel] := 0;
     TmpByte := GetEffectReady;
     SetFreq(CurChannel, SINE_TABLE[LastNoteTimerList[CurChannel] mod (High(SINE_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2));
@@ -236,7 +241,7 @@ procedure Play;
       if Byte(PCell^.Note) <> 0 then
         LastNoteTimerList[CurChannel] := 0;
     end;
-    if LastEffectList[CurChannel].Effect <> PCell^.Effect.Effect then
+    if LastEffectList[CurChannel, CurEffect].Effect <> PCell^.Effect.Effect then
       LastNoteTimerList[CurChannel] := 0;
     TmpByte := GetEffectReady;
     Short := SINE_TABLE[LastNoteTimerList[CurChannel] mod (High(SINE_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
@@ -309,8 +314,9 @@ AtBeginning:
     PCell := @PChannel^.Cells[CurCell];
     PInstrument := @Instruments[PCell^.InstrumentIndex];
     if Word(PCell^.Effect) <> 0 then
-    begin
-      case Char(PCell^.Effect.Effect) of
+    begin         
+      CurEffect := PCell^.Effect.Effect;
+      case Char(CurEffect) of
         '0', #0: // Arpeggio
           begin
             if (CurTicks = 0) and (Byte(Word(PCell^.Effect)) <> 0) and (Byte(PCell^.Note) <> 0) then
@@ -371,15 +377,23 @@ AtBeginning:
             if CurTicks = 0 then
             begin
               case Byte(Word(PCell^.Effect)) of
+                $00: // Set tremolo depth
+                  begin
+                    BD.AMDepth := PCell^.Effect.V2;
+                    Adlib.WriteReg($BD, Byte(BD));
+                  end;
+                $01: // Set vibrato depth
+                  begin
+                    BD.Vibrato := PCell^.Effect.V2;
+                    Adlib.WriteReg($BD, Byte(BD));
+                  end;
                 $F0: // Stop note
                   begin
                     Adlib.NoteClear(CurChannel);
-                    Word(LastEffectList[CurChannel]) := 0;
                   end;
                 $F4: // Fade note
                   begin
                     Adlib.NoteOff(CurChannel);
-                    Word(LastEffectList[CurChannel]) := 0;
                   end;
               end;
             end;
@@ -417,6 +431,7 @@ AtBeginning:
       PChannel := @PPattern^[CurChannel];
       PCell := @PChannel^.Cells[CurCell];
       PInstrument := @Instruments[PCell^.InstrumentIndex];
+      CurEffect := PCell^.Effect.Effect;
       // Note
       if Byte(PCell^.Note) <> 0 then
       begin
@@ -460,8 +475,9 @@ AtBeginning:
     PCell := @PChannel^.Cells[CurCell];
     PInstrument := @Instruments[PCell^.InstrumentIndex];
     if Word(PCell^.Effect) <> 0 then
-    begin
-      case Char(PCell^.Effect.Effect) of
+    begin              
+      CurEffect := PCell^.Effect.Effect;
+      case Char(CurEffect) of
         '1': // Freq slide up
           begin
             FreqSlideUp;
@@ -495,7 +511,10 @@ AtBeginning:
       begin
         CurCell := 0;
       end else
-      begin
+      begin                                  
+  BD.Vibrato := 1;
+  BD.AMDepth := 1;
+  Adlib.WriteReg($BD, Byte(BD));
         CurCell := 0;
         if CurPatternIndex = High(NepperRec.PatternIndices) then
         begin
@@ -542,6 +561,9 @@ begin
   end;
   CleanUpStates;
   Screen.WriteText(63, 0, $1F, '', 17);
+  BD.Vibrato := 1;
+  BD.AMDepth := 1;
+  Adlib.WriteReg($BD, Byte(BD));
 end;
 
 initialization
