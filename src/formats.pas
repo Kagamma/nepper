@@ -141,7 +141,7 @@ begin
   Rewrite(F, 1);
   NepperRec.Magic := SONG_MAGIC;
   NepperRec.Version := 1;
-  BlockWrite(F, NepperRec.Magic, SizeOf(TNepperRec));
+  BlockWrite(F, NepperRec, SizeOf(TNepperRec));
   for I := 0 to High(Formats.Patterns) do
   begin
     for J := 0 to NepperRec.ChannelCount - 1 do
@@ -160,7 +160,8 @@ begin
       begin                                                        
         BlockWrite(F, I, 1);
         BlockWrite(F, J, 1);
-        BlockWrite(F, Formats.Patterns[I]^[J].Cells[0], SizeOf(TNepperChannelCells));
+        BlockWrite(F, K, 1);
+        BlockWrite(F, Formats.Patterns[I]^[J].Cells[K], SizeOf(TNepperChannelCells) - K);
       end;
     end;
   end;
@@ -170,27 +171,17 @@ end;
 function LoadSong(FileName: String): Boolean; 
 var
   F: File;
-  I, J: Byte;
-  H: TNepperRec;
-begin    
-  Result := False; 
-  if FileName = '' then
-    Exit;
-  if FindCharPos(FileName, '.') = 0 then
-    FileName := FileName + '.ntr';
 
-  Assign(F, FileName);
-  {$I-}
-  System.Reset(F, 1);
-  {$I+}
-  if IOResult = 0 then
-  begin       
-    BlockRead(F, H.Magic, SizeOf(TNepperRec));
+  // Nepper's TRack
+  function LoadNTR: Boolean;
+  var
+    I, J, K: Byte;
+    H: TNepperRec;
+  begin
+    Result := False;
+    BlockRead(F, H, SizeOf(TNepperRec));
     if H.Magic <> SONG_MAGIC then
-    begin
-      Close(F);
       Exit;
-    end;
 
     NepperRec := H;
     for I := 0 to High(Formats.Patterns) do
@@ -202,11 +193,72 @@ begin
     begin
       BlockRead(F, I, 1);
       BlockRead(F, J, 1);
-      BlockRead(F, Formats.Patterns[I]^[J].Cells[0], SizeOf(TNepperChannelCells));
+      BlockRead(F, K, 1);
+      BlockRead(F, Formats.Patterns[I]^[J].Cells[K], SizeOf(TNepperChannelCells) - K);
     end;
-    Close(F);
     Adlib.SetOPL3(Byte(NepperRec.IsOPL3));
     Result := True;
+  end;
+
+  // Reality ADlib Tracker version 1.0
+  function LoadRAD: Boolean;
+  type
+    TRADSettingRec = bitpacked record
+      InitSpeed: TBit5;
+      Unused: TBit1;
+      IsSlow: TBit1;
+      IsDesc: TBit1;
+    end;
+
+    TRADHeaderRec = packed record
+      Magic: array[0..$F] of Char;
+      Version: Byte;
+      Setting: TRADSettingRec;
+    end;
+
+  var
+    I: Byte;
+    H: TRADHeaderRec;
+  begin
+    Result := False;
+    BlockRead(F, H, SizeOf(TNepperRec));
+    if PDWord(@H.Magic[0])^ <> $20444152 then
+      Exit;
+    if H.Setting.IsDesc = 1 then
+    begin
+      I := 0;
+      while (not EOF(F)) and (I <> 0) do
+      begin
+        BlockRead(F, I, 1);
+      end;
+    end;
+  end;
+
+begin    
+  Result := False; 
+  if FileName = '' then
+    Exit;
+  if FindCharPos(FileName, '.') = 0 then
+    FileName := FileName + '.ntr';
+  FileName := UpCase(FileName);
+
+  Assign(F, FileName);
+  {$I-}
+  System.Reset(F, 1);
+  {$I+}
+  if IOResult = 0 then
+  begin
+    case PDWord(@FileName[Length(FileName) - 3])^ of
+      $52544E2E: // .NTR
+        begin
+          Result := LoadNTR;
+        end;
+      $4441522E: // .RAD
+        begin
+
+        end;
+    end;
+    Close(F);
   end;
 end;
 
@@ -214,7 +266,7 @@ var
   I: Byte;
 
 initialization
-  FillChar(NepperRec.Magic, SizeOf(NepperRec), 0);
+  FillChar(NepperRec, SizeOf(NepperRec), 0);
   for I := 0 to High(Formats.Patterns) do
   begin
     New(Formats.Patterns[I]);
