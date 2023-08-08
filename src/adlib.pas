@@ -164,6 +164,9 @@ procedure SetOPL3(const V: Byte);
 
 implementation
 
+uses
+  Utils;
+
 procedure WriteReg(const Reg: Word; Value: Byte); assembler;
 asm
   mov ax,Reg
@@ -276,12 +279,7 @@ begin
     begin
       Op := @Inst^.Operators[I];
       Volume := Op^.Volume;
-      VolumeTmp := Volume.Total - VolumeModList[Channel];
-      if VolumeTmp < 0 then
-        VolumeTmp := 0
-      else
-      if VolumeTmp > $3F then
-        VolumeTmp := $3F;
+      VolumeTmp := Min(Max(Volume.Total - VolumeModList[Channel], 0), 63);
       AdjustVolume(VolumeTmp);
 
       if ADLIB_SLOTS_OPL3[Channel, I] <> $FF then
@@ -306,12 +304,7 @@ begin
     begin
       Op := @Inst^.Operators[I];
       Volume := Op^.Volume;
-      VolumeTmp := Volume.Total - VolumeModList[Channel];
-      if VolumeTmp < 0 then
-        VolumeTmp := 0
-      else
-      if VolumeTmp > $3F then
-        VolumeTmp := $3F;
+      VolumeTmp := Min(Max(Volume.Total - VolumeModList[Channel], 0), 63);
       AdjustVolume(VolumeTmp);
 
       WriteReg(ADLIB_SLOTS_OPL2[Channel, I] + $20, Byte(Op^.Effect));

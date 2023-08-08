@@ -182,6 +182,11 @@ procedure Play;
     LastEffectList[CurChannel, CurEffect].Effect := PCell^.Effect.Effect;
   end;
 
+  function GetLastEffect(const E: Char): Byte; inline;
+  begin
+    Result := Byte(Word(LastEffectList[CurChannel, Byte(E)]));
+  end;
+
   procedure AdjustVolume(const V: Byte);
   begin
     if NepperRec.IsOPL3 then
@@ -278,9 +283,12 @@ procedure Play;
     Inc(LastNoteTimerList[CurChannel]);
   end;
 
-  procedure TonePortamento;
+  procedure TonePortamento(const IsLastEffect: Boolean = False);
   begin
-    TmpByte := GetEffectReady;
+    if IsLastEffect then
+      TmpByte := GetLastEffect('3')
+    else
+      TmpByte := GetEffectReady;
     if (LastNoteList[CurChannel].Octave < LastNoteFutureList[CurChannel].Octave) or ((LastNoteList[CurChannel].Octave = LastNoteFutureList[CurChannel].Octave) and (LastNoteList[CurChannel].Note < LastNoteFutureList[CurChannel].Note)) then
       SlideFreqUpdate(CurChannel, TmpByte)
     else
@@ -298,6 +306,17 @@ procedure Play;
   begin
     TmpByte := GetEffectReady;
     SlideFreq(CurChannel, -TmpByte);
+  end;
+
+  procedure VolumeSlide;
+  begin
+    //if CurTicks = 0 then
+    begin
+      TmpByte := GetEffectReady;
+      Inc(Adlib.VolumeModList[CurChannel], TNepperEffectValue(TmpByte).V1 - TNepperEffectValue(TmpByte).V2);
+      Adlib.VolumeModList[CurChannel] := Max(Min(Adlib.VolumeModList[CurChannel], 63), -63);
+      Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+    end;
   end;
 
 label
@@ -331,6 +350,10 @@ AtBeginning:
           begin
             Vibrato;
           end;
+        '5': // Tone portamento with volume slide
+          begin
+            VolumeSlide;
+          end;
         '9': // Volume
           begin
             if CurTicks = 0 then
@@ -343,13 +366,7 @@ AtBeginning:
           end;
         'A': // Volume slide
           begin
-            if CurTicks = 0 then
-            begin
-              TmpByte := GetEffectReady;
-              Inc(Adlib.VolumeModList[CurChannel], TNepperEffectValue(TmpByte).V1 - TNepperEffectValue(TmpByte).V2);
-              Adlib.VolumeModList[CurChannel] := Max(Min(Adlib.VolumeModList[CurChannel], 63), -63);
-              Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
-            end;
+            VolumeSlide;
           end;
         'D': // Pattern break
           begin
@@ -441,7 +458,7 @@ AtBeginning:
       // Note
       if Byte(PCell^.Note) <> 0 then
       begin
-        if Char(PCell^.Effect.Effect) <> '3' then
+        if not (Char(PCell^.Effect.Effect) in ['3', '5']) then
         begin
           if IsInstr then
           begin
@@ -500,6 +517,16 @@ AtBeginning:
             end else
             begin
               TonePortamento;
+            end;
+          end;
+        '5': // Tone portamento
+          begin
+            if not ChannelEnabledList[CurChannel] then
+            begin
+              Continue;
+            end else
+            begin
+              TonePortamento(True);
             end;
           end;
       end;
