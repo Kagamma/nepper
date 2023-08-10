@@ -58,7 +58,7 @@ type
     IsOPL3: Boolean;
     ChannelCount: ShortInt;
     Instruments: array[0..31] of TAdlibInstrument;
-    PatternIndices: array[0..$FF] of Byte;
+    Orders: array[0..$FF] of Byte;
   end;
 
 var
@@ -203,6 +203,7 @@ var
   end;
 
   // Reality ADlib Tracker version 1.0
+  // http://fileformats.archiveteam.org/wiki/Reality_AdLib_Tracker_module
   function LoadRAD: Boolean;
   type
     TRADSettingRec = bitpacked record
@@ -219,21 +220,60 @@ var
     end;
 
   var
-    I: Byte;
+    I, OrderLen: Byte;
+    C: Char;
     H: TRADHeaderRec;
+    Instr: array[0..$A] of Byte;
   begin
     Result := False;
     BlockRead(F, H, SizeOf(TNepperRec));
     if PDWord(@H.Magic[0])^ <> $20444152 then
-      Exit;
+      Exit; ;
+    // Read desc
     if H.Setting.IsDesc = 1 then
     begin
-      I := 0;
-      while (not EOF(F)) and (I <> 0) do
+      C := #0;
+      I := 1;
+      while (not EOF(F)) and (C <> #0) do
       begin
-        BlockRead(F, I, 1);
+        BlockRead(F, C, 1);
+        if C <> #0 then
+        begin
+          if I <= 40 then
+          begin
+            NepperRec.Name[I] := C;
+          end;
+          Inc(I);
+        end;
       end;
+      NepperRec.Name[0] := C;
     end;
+    // Read instr
+    BlockRead(F, I, 1);
+    while I <> 0 do
+    begin
+      BlockRead(F, Instr[0], SizeOf(Instr));
+      Byte(NepperRec.Instruments[I].Operators[0].Effect) := Instr[0]; 
+      Byte(NepperRec.Instruments[I].Operators[1].Effect) := Instr[1];  
+      Byte(NepperRec.Instruments[I].Operators[0].Volume) := Instr[2];
+      Byte(NepperRec.Instruments[I].Operators[1].Volume) := Instr[3];     
+      Byte(NepperRec.Instruments[I].Operators[0].AttackDecay) := Instr[4];
+      Byte(NepperRec.Instruments[I].Operators[1].AttackDecay) := Instr[5];
+      Byte(NepperRec.Instruments[I].Operators[0].SustainRelease) := Instr[6];
+      Byte(NepperRec.Instruments[I].Operators[1].SustainRelease) := Instr[7];    
+      Byte(NepperRec.Instruments[I].AlgFeedback) := Instr[8];
+      Byte(NepperRec.Instruments[I].Operators[0].Waveform) := Instr[9];
+      Byte(NepperRec.Instruments[I].Operators[1].Waveform) := Instr[$A];
+      BlockRead(F, I, 1);
+    end;
+    // Read order
+    BlockRead(F, OrderLen, 1);
+    for I := 1 to OrderLen do
+    begin
+      BlockRead(F, NepperRec.Orders[I - 1], 1);
+      NepperRec.Orders[I - 1] := NepperRec.Orders[I - 1] and $1F; // TODO: jump marker
+    end;
+    // Read pattern
   end;
 
 begin    

@@ -96,13 +96,13 @@ begin
   end else
   begin
     CurPatternIndex := 0;
-    PPattern := Formats.Patterns[NepperRec.PatternIndices[CurPatternIndex]];
+    PPattern := Formats.Patterns[NepperRec.Orders[CurPatternIndex]];
     IsPatternOnly := False;
     ColorStatus := $1A;
     HexStrFast2(CurPatternIndex, GS2);
     Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
     Screen.WriteTextFast1(ScreenPointer + 74, ColorStatus, '/');
-    HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
+    HexStrFast2(NepperRec.Orders[CurPatternIndex], GS2);
     Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
     Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
   end;
@@ -546,13 +546,13 @@ AtBeginning:
       end else
       begin
         CurCell := NextCell;
-        if CurPatternIndex = High(NepperRec.PatternIndices) then
+        if CurPatternIndex = High(NepperRec.Orders) then
         begin
           Stop;
           Exit;
         end;
         Inc(CurPatternIndex);
-        I := NepperRec.PatternIndices[CurPatternIndex];
+        I := NepperRec.Orders[CurPatternIndex];
         case I of
           SONG_HALT:
             begin
@@ -564,11 +564,11 @@ AtBeginning:
               CurPatternIndex := 0;
             end;
         end;
-        PPattern := Formats.Patterns[NepperRec.PatternIndices[CurPatternIndex]];
+        PPattern := Formats.Patterns[NepperRec.Orders[CurPatternIndex]];
         HexStrFast2(CurPatternIndex, GS2);
         Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
         Screen.WriteTextFast1(ScreenPointer + 74, ColorStatus, '/');
-        HexStrFast2(NepperRec.PatternIndices[CurPatternIndex], GS2);
+        HexStrFast2(NepperRec.Orders[CurPatternIndex], GS2);
         Screen.WriteTextFast2(ScreenPointer + 75, ColorStatus, GS2);
         Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
       end;
