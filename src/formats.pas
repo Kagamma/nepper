@@ -58,7 +58,7 @@ type
     IsOPL3: Boolean;
     ChannelCount: ShortInt;
     Instruments: array[0..31] of TAdlibInstrument;
-    PatternIndices: array[0..$FF] of Byte;
+    Orders: array[0..$FF] of Byte;
   end;
 
 var
@@ -203,6 +203,7 @@ var
   end;
 
   // Reality ADlib Tracker version 1.0
+  // http://fileformats.archiveteam.org/wiki/Reality_AdLib_Tracker_module
   function LoadRAD: Boolean;
   type
     TRADSettingRec = bitpacked record
@@ -219,20 +220,91 @@ var
     end;
 
   var
-    I: Byte;
+    B, I, J, OrderLen, LineNum, ChannelNo, InstrNo, Octave, Note, Effect, EffectParam: Byte;
+    W: Word;
+    C: Char;
     H: TRADHeaderRec;
+    InstrData: array[0..$A] of Byte;
+    PatternTable: array[0..31] of Word;
   begin
     Result := False;
     BlockRead(F, H, SizeOf(TNepperRec));
     if PDWord(@H.Magic[0])^ <> $20444152 then
-      Exit;
+      Exit; ;
+    // Read desc
     if H.Setting.IsDesc = 1 then
     begin
-      I := 0;
-      while (not EOF(F)) and (I <> 0) do
+      C := #0;
+      I := 1;
+      while (not EOF(F)) and (C <> #0) do
       begin
-        BlockRead(F, I, 1);
+        BlockRead(F, C, 1);
+        if C <> #0 then
+        begin
+          if I <= 40 then
+          begin
+            NepperRec.Name[I] := C;
+          end;
+          Inc(I);
+        end;
       end;
+      NepperRec.Name[0] := C;
+    end;
+    // Read InstrData
+    BlockRead(F, I, 1);
+    while I <> 0 do
+    begin
+      BlockRead(F, InstrData[0], SizeOf(InstrData));
+      Byte(NepperRec.Instruments[I].Operators[0].Effect) := InstrData[0];
+      Byte(NepperRec.Instruments[I].Operators[1].Effect) := InstrData[1];
+      Byte(NepperRec.Instruments[I].Operators[0].Volume) := InstrData[2];
+      Byte(NepperRec.Instruments[I].Operators[1].Volume) := InstrData[3];
+      Byte(NepperRec.Instruments[I].Operators[0].AttackDecay) := InstrData[4];
+      Byte(NepperRec.Instruments[I].Operators[1].AttackDecay) := InstrData[5];
+      Byte(NepperRec.Instruments[I].Operators[0].SustainRelease) := InstrData[6];
+      Byte(NepperRec.Instruments[I].Operators[1].SustainRelease) := InstrData[7];
+      Byte(NepperRec.Instruments[I].AlgFeedback) := InstrData[8];
+      Byte(NepperRec.Instruments[I].Operators[0].Waveform) := InstrData[9];
+      Byte(NepperRec.Instruments[I].Operators[1].Waveform) := InstrData[$A];
+      BlockRead(F, I, 1);
+    end;
+    // Read order
+    BlockRead(F, OrderLen, 1);
+    for I := 1 to OrderLen do
+    begin
+      BlockRead(F, NepperRec.Orders[I - 1], 1);
+      NepperRec.Orders[I - 1] := NepperRec.Orders[I - 1] and $1F; // TODO: jump marker
+    end;
+    NepperRec.Orders[I] := $FF; // Stop mark
+    // Read pattern table
+    BlockRead(F, PatternTable[0], SizeOf(PatternTable));
+    // Cleanup pattern before reading .RAD patterns
+    for I := 0 to High(Formats.Patterns) do
+    begin
+      New(Formats.Patterns[I]);
+      FillChar(Formats.Patterns[I]^[0], SizeOf(TNepperPattern), 0);
+    end;
+    for I := 0 to 31 do
+    begin
+      if PatternTable[I] = 0 then
+        Continue;
+      Seek(F, PatternTable[I]);
+      // Read line numbers
+      repeat
+        BlockRead(F, LineNum, 1);
+        for J := 0 to (LineNum and $7F) do
+        begin
+          repeat
+            BlockRead(F, ChannelNo, 1);
+            BlockRead(F, Note, 1);         
+            BlockRead(F, Effect, 1);
+            //
+
+            //
+            BlockRead(F, EffectParam, 1);
+          until (ChannelNo and $80) <> 0;
+        end;
+      until (LineNum and $80) <> 0;
     end;
   end;
 
@@ -257,7 +329,6 @@ begin
         end;
       $4441522E: // .RAD
         begin
-
         end;
     end;
     Close(F);

@@ -48,14 +48,14 @@ begin
     P := PatternAnchor + I;
     HexStrFast2(P, S);
     WriteText(10 + 3 * I, 6, $0F, S, 2);
-    case NepperRec.PatternIndices[P] of
+    case NepperRec.Orders[P] of
       $FE:
         WriteText(10 + 3 * I, 7, $0F, 'R', 2);
       $FF:
         WriteText(10 + 3 * I, 7, $0F, 'H', 2);
       else
         begin
-          S := HexStr(NepperRec.PatternIndices[P], 2);
+          S := HexStr(NepperRec.Orders[P], 2);
           WriteText(10 + 3 * I, 7, $0F, S, 2);
         end;
     end;
@@ -110,7 +110,7 @@ procedure LoopEditSheet;
   begin 
     if Integer(PatternIndex) + Integer(Step) > $FF then
       Step := $FF - PatternIndex;
-    if PatternIndex + Step <= High(NepperRec.PatternIndices) then
+    if PatternIndex + Step <= High(NepperRec.Orders) then
     begin
       Inc(PatternIndex, Step);
       if PatternIndex > PatternAnchor + $F then
@@ -129,14 +129,14 @@ procedure LoopEditSheet;
     I: Byte;
   begin
     if PatternIndex = $FF then
-      NepperRec.PatternIndices[$FF] := 0
+      NepperRec.Orders[$FF] := 0
     else
     begin
       for I := $FE downto PatternIndex do
       begin
-        NepperRec.PatternIndices[I + 1] := NepperRec.PatternIndices[I];
+        NepperRec.Orders[I + 1] := NepperRec.Orders[I];
       end;
-      NepperRec.PatternIndices[PatternIndex] := 0;
+      NepperRec.Orders[PatternIndex] := 0;
     end;
     RenderSongInfoFast;
   end;
@@ -146,14 +146,14 @@ procedure LoopEditSheet;
     I: Byte;
   begin
     if PatternIndex = $FF then
-      NepperRec.PatternIndices[$FF] := 0
+      NepperRec.Orders[$FF] := 0
     else
     begin
       for I := PatternIndex to $FE do
       begin
-        NepperRec.PatternIndices[I] := NepperRec.PatternIndices[I + 1];
+        NepperRec.Orders[I] := NepperRec.Orders[I + 1];
       end;
-      NepperRec.PatternIndices[$FF] := 0;
+      NepperRec.Orders[$FF] := 0;
     end;
     RenderSongInfoFast;
   end;
@@ -163,8 +163,8 @@ var
   OldCursorX,
   OldCursorY: Byte;
 begin
-  Input.InputHex2(S, NepperRec.PatternIndices[PatternIndex], $3F);
-  case NepperRec.PatternIndices[PatternIndex] of
+  Input.InputHex2(S, NepperRec.Orders[PatternIndex], $3F);
+  case NepperRec.Orders[PatternIndex] of
     SONG_REPEAT:
       WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'R', 2);
     SONG_HALT:
@@ -240,12 +240,12 @@ begin
         case KBInput.CharCode of
           'h':
             begin
-              NepperRec.PatternIndices[PatternIndex] := SONG_HALT;
+              NepperRec.Orders[PatternIndex] := SONG_HALT;
               WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'H', 2);
             end;
           'r':
             begin
-              NepperRec.PatternIndices[PatternIndex] := SONG_REPEAT;
+              NepperRec.Orders[PatternIndex] := SONG_REPEAT;
               WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'R', 2);
             end;
           '<':
