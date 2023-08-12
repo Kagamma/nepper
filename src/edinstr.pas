@@ -61,8 +61,8 @@ begin
   WriteTextBack(OP1_X, 14, COLOR_LABEL, 'Waveform:');
   WriteTextBack(OP1_X, 15, COLOR_LABEL, 'Sustain Sound:');
   WriteTextBack(OP1_X, 16, COLOR_LABEL, 'Scale Envelope:');
-  WriteTextBack(OP1_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
-  WriteTextBack(OP1_X, 18, COLOR_LABEL, 'Volume Vibrator:');
+  WriteTextBack(OP1_X, 17, COLOR_LABEL, 'Vibrato:');
+  WriteTextBack(OP1_X, 18, COLOR_LABEL, 'Tremolo:');
   
   WriteTextBack(OP2_X, 3, COLOR_LABEL, 'Inst. name:');
   WriteTextBack(OP2_X, 4, COLOR_LABEL, 'Feedback:');
@@ -77,8 +77,8 @@ begin
   WriteTextBack(OP2_X, 14, COLOR_LABEL, 'Waveform:');
   WriteTextBack(OP2_X, 15, COLOR_LABEL, 'Sustain Sound:');
   WriteTextBack(OP2_X, 16, COLOR_LABEL, 'Scale Envelope:');
-  WriteTextBack(OP2_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
-  WriteTextBack(OP2_X, 18, COLOR_LABEL, 'Volume Vibrator:');
+  WriteTextBack(OP2_X, 17, COLOR_LABEL, 'Vibrato:');
+  WriteTextBack(OP2_X, 18, COLOR_LABEL, 'Tremolo:');
 
   WriteTextBack(OP3_X, 4, COLOR_LABEL, 'Fine Tune:');
   WriteTextBack(OP3_X + 2, 6, $4E, '     Operator 3    ');
@@ -92,8 +92,8 @@ begin
   WriteTextBack(OP3_X, 14, COLOR_LABEL, 'Waveform:');
   WriteTextBack(OP3_X, 15, COLOR_LABEL, 'Sustain Sound:');
   WriteTextBack(OP3_X, 16, COLOR_LABEL, 'Scale Envelope:');
-  WriteTextBack(OP3_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
-  WriteTextBack(OP3_X, 18, COLOR_LABEL, 'Volume Vibrator:');
+  WriteTextBack(OP3_X, 17, COLOR_LABEL, 'Vibrato:');
+  WriteTextBack(OP3_X, 18, COLOR_LABEL, 'Tremolo:');
                   
   WriteTextBack(OP4_X, 4, COLOR_LABEL, 'Panning:');
   WriteTextBack(OP4_X + 2, 6, $4E, '     Operator 4    ');
@@ -107,8 +107,8 @@ begin
   WriteTextBack(OP4_X, 14, COLOR_LABEL, 'Waveform:');
   WriteTextBack(OP4_X, 15, COLOR_LABEL, 'Sustain Sound:');
   WriteTextBack(OP4_X, 16, COLOR_LABEL, 'Scale Envelope:');
-  WriteTextBack(OP4_X, 17, COLOR_LABEL, 'Pitch Vibrator:');
-  WriteTextBack(OP4_X, 18, COLOR_LABEL, 'Volume Vibrator:');
+  WriteTextBack(OP4_X, 17, COLOR_LABEL, 'Vibrato:');
+  WriteTextBack(OP4_X, 18, COLOR_LABEL, 'Tremolo:');
                                       
   WriteTextBack(76, 21, COLOR_LABEL, 'Test operator mode:');
   WriteTextBack(76, 22, COLOR_LABEL, 'Test tone:');
