@@ -340,9 +340,14 @@ var
                 Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('D');
               $F:
                 Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('F');
+              else
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := 0;
             end;
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
+            if Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect <> 0 then
+            begin
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
+            end;
           end;
           if not InstrUsed[InstrNo] then
           begin
