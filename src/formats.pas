@@ -354,7 +354,7 @@ var
             Byte(Formats.Patterns[I]^[ChannelNo].Cells[J].Note) := 0;
             Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('Z');
             Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := $F;                 
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := 0;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := 0;
           end;
         until ((ChannelData and %10000000) <> 0) or EOF(F);
       until ((LineData and %10000000) <> 0) or EOF(F);
