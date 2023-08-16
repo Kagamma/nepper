@@ -38,8 +38,8 @@ x: Speed.
 y: Depth.
 00: Uses the last value.
 
-[5xx] TONE PORTAMENTO
----------------------
+[5xx] VOLUME SLIDE + TONE PORTAMENTO
+------------------------------------
 This command executes both Tone portamento with "00" and Volume slide.
 x: Speed of volumeslide up
 y: Speed of slide down
