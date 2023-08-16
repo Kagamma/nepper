@@ -254,7 +254,7 @@ procedure Play;
     Short := SINE_TABLE[LastNoteTimerList[CurChannel] mod (High(SINE_TABLE) + 1)] div ($10 - TNepperEffectValue(TmpByte).V2);
     AdjustVolume(Max(Min(Integer(NepperRec.Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total) + Short, $3F), 0));
     Inc(LastNoteTimerList[CurChannel], High(SINE_TABLE) div (CurSpeed * 4) * (TNepperEffectValue(TmpByte).V1 + 1));
-    Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+    Adlib.SetVolume(CurChannel, @Instruments[PCell^.InstrumentIndex]);
   end;
 
   procedure Tremor;
@@ -279,7 +279,7 @@ procedure Play;
       Instruments[PCell^.InstrumentIndex].Operators[2].Volume.Total := $3F;
       Instruments[PCell^.InstrumentIndex].Operators[3].Volume.Total := $3F;
     end;
-    Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+    Adlib.SetVolume(CurChannel, @Instruments[PCell^.InstrumentIndex]);
     Inc(LastNoteTimerList[CurChannel]);
   end;
 
@@ -315,12 +315,13 @@ procedure Play;
       TmpByte := GetEffectReady;
       Inc(Adlib.VolumeModList[CurChannel], TNepperEffectValue(TmpByte).V1 - TNepperEffectValue(TmpByte).V2);
       Adlib.VolumeModList[CurChannel] := Max(Min(Adlib.VolumeModList[CurChannel], 63), -63);
-      Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+      Adlib.SetVolume(CurChannel, @Instruments[PCell^.InstrumentIndex]);
     end;
   end;
 
 label
-  AtBeginning;
+  AtBeginning,
+  AfterPlayingNote;
 begin
   // Is playing?
   if not IsPlaying then
@@ -361,7 +362,7 @@ AtBeginning:
               Adlib.VolumeModList[CurChannel] := 0;
               TmpByte := $3F - Max(Min(Byte(Word(PCell^.Effect)), $3F), 0);
               AdjustVolume(TmpByte);
-              Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
+              Adlib.SetVolume(CurChannel, @Instruments[PCell^.InstrumentIndex]);
             end;
           end;
         'A': // Volume slide
@@ -444,7 +445,7 @@ AtBeginning:
     begin
       if not IsInstr then
         Adlib.NoteClear(CurChannel);
-      Continue;
+      goto AfterPlayingNote;
     end;
     if CurTicks = LastNoteDelayList[CurChannel] then
     begin
@@ -459,7 +460,7 @@ AtBeginning:
             Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
           end else
           begin
-            //if LastInstrumentList[CurChannel] <> PCell^.InstrumentIndex then
+            if LastInstrumentList[CurChannel] <> PCell^.InstrumentIndex then
             begin
               Adlib.SetInstrument(CurChannel, @Instruments[PCell^.InstrumentIndex]);
               LastInstrumentList[CurChannel] := PCell^.InstrumentIndex;
@@ -477,6 +478,7 @@ AtBeginning:
       end else
         Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $1F, ' ');
     end;
+AfterPlayingNote:
     // Post Effect
     if Word(PCell^.Effect) <> 0 then
     begin

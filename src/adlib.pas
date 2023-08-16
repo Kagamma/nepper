@@ -152,7 +152,8 @@ var
 function Check: Boolean;
 procedure Init;
 procedure Reset;
-procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);
+procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);        
+procedure SetVolume(const Channel: Byte; const Inst: PAdlibInstrument);
 procedure NoteOn(const Channel, Note, Octave: Byte; const FineTune: ShortInt = 0);
 procedure NoteOff(const Channel: Byte);
 procedure NoteClear(const Channel: Byte);
@@ -229,7 +230,7 @@ var
   VolumeTmp: ShortInt;
   Alg2: TAdlibRegC0C8;
 
-  procedure AdjustVolume(const V: Byte);
+  procedure AdjustVolume(const V: Byte); inline;
   begin
     if IsOPL3Enabled and ((Channel <= 2) or (Channel >= 6)) then
       case Inst^.AlgFeedback.Alg2 of
@@ -313,6 +314,82 @@ begin
     end;
     Inst^.AlgFeedback.Alg := Inst^.AlgFeedback.Alg2;
     WriteReg(Channel + $C0, Byte(Inst^.AlgFeedback));
+  end;
+end;
+
+procedure SetVolume(const Channel: Byte; const Inst: PAdlibInstrument);
+var
+  I: Byte;
+  Op: PAdlibInstrumentOperator;
+  Volume: TAdlibReg4055;
+  VolumeTmp: ShortInt;
+
+  procedure AdjustVolume(const V: Byte); inline;
+  begin
+    if IsOPL3Enabled and ((Channel <= 2) or (Channel >= 6)) then
+      case Inst^.AlgFeedback.Alg2 of
+        0:
+          begin
+            if I = 3 then
+              Volume.Total := V;
+          end;
+        1:
+          begin
+            if (I = 0) or (I = 3) then
+              Volume.Total := V;
+          end;
+        2:
+          begin
+            if (I = 1) or (I = 3) then
+              Volume.Total := V;
+          end;
+        3:
+          begin
+            if (I = 0) or (I = 2) or (I = 3) then
+              Volume.Total := V;
+          end;
+      end
+    else
+      case Inst^.AlgFeedback.Alg2 of
+        0:
+          begin
+            if (I = 0) or (I = 1) then
+              Volume.Total := V;
+          end;
+        1:
+          begin
+            if I = 1 then
+              Volume.Total := V;
+          end;
+      end;
+  end;
+
+begin
+  if IsOPL3Enabled then
+  begin
+    for I := 0 to 3 do
+    begin
+      Op := @Inst^.Operators[I];
+      Volume := Op^.Volume;
+      VolumeTmp := Min(Max(Volume.Total - VolumeModList[Channel], 0), 63);
+      AdjustVolume(VolumeTmp);
+
+      if ADLIB_SLOTS_OPL3[Channel, I] <> $FF then
+      begin
+        WriteRegFast(ADLIB_SLOTS_OPL3[Channel, I] + $40, Byte(Volume));
+      end;
+    end;
+  end else
+  begin
+    for I := 0 to 1 do
+    begin
+      Op := @Inst^.Operators[I];
+      Volume := Op^.Volume;
+      VolumeTmp := Min(Max(Volume.Total - VolumeModList[Channel], 0), 63);
+      AdjustVolume(VolumeTmp);
+
+      WriteReg(ADLIB_SLOTS_OPL2[Channel, I] + $40, Byte(Volume));
+    end;
   end;
 end;
 
