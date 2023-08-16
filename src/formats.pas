@@ -299,9 +299,27 @@ var
             BlockRead(F, Note, 1);         
             BlockRead(F, Effect, 1);
             //
-
+            InstrNo := ((Note and %10000000) shr 3) or ((Effect and %11110000) shr 4);
+            Octave := (Note and %01110000) shr 4;
+            Note := Note and %00001111;
+            Inc(Note);
+            if Note > 12 then
+            begin
+              Note := 1;
+              Inc(Octave);
+            end;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Note.Note := Note;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Note.Octave := Octave;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].InstrumentIndex := InstrNo;
+            if Effect and %00001111 = 0 then
+            begin
+              Word(Formats.Patterns[I]^[ChannelNo].Cells[J].Effect) := 0;
+              Continue; // It has no effect param
+            end;
             //
             BlockRead(F, EffectParam, 1);
+            Effect := Effect and %00001111;
+            Word(Formats.Patterns[I]^[ChannelNo].Cells[J].Effect) := 0;
           until (ChannelNo and $80) <> 0;
         end;
       until (LineNum and $80) <> 0;
