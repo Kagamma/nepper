@@ -220,7 +220,7 @@ var
     end;
 
   var
-    B, I, J, OrderLen, LineNum, ChannelNo, InstrNo, Octave, Note, Effect, EffectParam: Byte;
+    B, I, J, OrderLen, LineData, ChannelData, ChannelNo, InstrNo, Octave, Note, Effect, EffectParam: Byte;
     W: Word;
     C: Char;
     H: TRADHeaderRec;
@@ -228,16 +228,14 @@ var
     PatternTable: array[0..31] of Word;
   begin
     Result := False;
-    BlockRead(F, H, SizeOf(TNepperRec));
+    BlockRead(F, H, SizeOf(TRADHeaderRec));
     if PDWord(@H.Magic[0])^ <> $20444152 then
-      Exit; ;
+      Exit;
     // Read desc
     if H.Setting.IsDesc = 1 then
     begin
-      C := #0;
       I := 1;
-      while (not EOF(F)) and (C <> #0) do
-      begin
+      repeat
         BlockRead(F, C, 1);
         if C <> #0 then
         begin
@@ -247,43 +245,43 @@ var
           end;
           Inc(I);
         end;
-      end;
-      NepperRec.Name[0] := C;
+      until (C = #0) or EOF(F);
+      NepperRec.Name[0] := Char(I);
     end;
     // Read InstrData
     BlockRead(F, I, 1);
     while I <> 0 do
     begin
       BlockRead(F, InstrData[0], SizeOf(InstrData));
-      Byte(NepperRec.Instruments[I].Operators[0].Effect) := InstrData[0];
-      Byte(NepperRec.Instruments[I].Operators[1].Effect) := InstrData[1];
-      Byte(NepperRec.Instruments[I].Operators[0].Volume) := InstrData[2];
-      Byte(NepperRec.Instruments[I].Operators[1].Volume) := InstrData[3];
-      Byte(NepperRec.Instruments[I].Operators[0].AttackDecay) := InstrData[4];
-      Byte(NepperRec.Instruments[I].Operators[1].AttackDecay) := InstrData[5];
-      Byte(NepperRec.Instruments[I].Operators[0].SustainRelease) := InstrData[6];
-      Byte(NepperRec.Instruments[I].Operators[1].SustainRelease) := InstrData[7];
+      Byte(NepperRec.Instruments[I].Operators[1].Effect) := InstrData[0];
+      Byte(NepperRec.Instruments[I].Operators[0].Effect) := InstrData[1];
+      Byte(NepperRec.Instruments[I].Operators[1].Volume) := InstrData[2];
+      Byte(NepperRec.Instruments[I].Operators[0].Volume) := InstrData[3];
+      Byte(NepperRec.Instruments[I].Operators[1].AttackDecay) := InstrData[4];
+      Byte(NepperRec.Instruments[I].Operators[0].AttackDecay) := InstrData[5];
+      Byte(NepperRec.Instruments[I].Operators[1].SustainRelease) := InstrData[6];
+      Byte(NepperRec.Instruments[I].Operators[0].SustainRelease) := InstrData[7];
       Byte(NepperRec.Instruments[I].AlgFeedback) := InstrData[8];
-      Byte(NepperRec.Instruments[I].Operators[0].Waveform) := InstrData[9];
-      Byte(NepperRec.Instruments[I].Operators[1].Waveform) := InstrData[$A];
+      Byte(NepperRec.Instruments[I].Operators[1].Waveform) := InstrData[9];
+      Byte(NepperRec.Instruments[I].Operators[0].Waveform) := InstrData[$A];
       BlockRead(F, I, 1);
     end;
     // Read order
     BlockRead(F, OrderLen, 1);
-    for I := 1 to OrderLen do
+    for I := 0 to OrderLen - 1 do
     begin
-      BlockRead(F, NepperRec.Orders[I - 1], 1);
-      NepperRec.Orders[I - 1] := NepperRec.Orders[I - 1] and $1F; // TODO: jump marker
+      BlockRead(F, NepperRec.Orders[I], 1);
+      NepperRec.Orders[I] := NepperRec.Orders[I] and $1F; // TODO: jump marker
     end;
-    NepperRec.Orders[I] := $FF; // Stop mark
+    NepperRec.Orders[OrderLen] := $FF; // Stop mark
     // Read pattern table
     BlockRead(F, PatternTable[0], SizeOf(PatternTable));
     // Cleanup pattern before reading .RAD patterns
     for I := 0 to High(Formats.Patterns) do
     begin
-      New(Formats.Patterns[I]);
       FillChar(Formats.Patterns[I]^[0], SizeOf(TNepperPattern), 0);
     end;
+    NepperRec.ChannelCount := 1;
     for I := 0 to 31 do
     begin
       if PatternTable[I] = 0 then
@@ -291,57 +289,60 @@ var
       Seek(F, PatternTable[I]);
       // Read line numbers
       repeat
-        BlockRead(F, LineNum, 1);
-        for J := 0 to (LineNum and $7F) do
-        begin
-          repeat
-            BlockRead(F, ChannelNo, 1);
-            BlockRead(F, Note, 1);         
-            BlockRead(F, Effect, 1);
-            //
-            InstrNo := ((Note and %10000000) shr 3) or ((Effect and %11110000) shr 4);
-            Octave := (Note and %01110000) shr 4;
-            Note := Note and %00001111;
-            Inc(Note);
-            if Note > 12 then
-            begin
-              Note := 1;
-              Inc(Octave);
-            end;
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Note.Note := Note;
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Note.Octave := Octave;
-            Formats.Patterns[I]^[ChannelNo].Cells[J].InstrumentIndex := InstrNo;
-            if Effect and %00001111 = 0 then
-            begin
-              Word(Formats.Patterns[I]^[ChannelNo].Cells[J].Effect) := 0;
-              Continue; // It has no effect param
-            end;
-            //
-            BlockRead(F, EffectParam, 1);
-            case (Effect and %00001111) of
-              $1:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('2');
-              $2:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('1');
-              $3:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('3');
-              $5:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('5');
-              $A:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('A');
-              $C:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('9');
-              $D:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('D');
-              $F:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('F');
-            end;
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
-          until (ChannelNo and $80) <> 0;
-        end;
-      until (LineNum and $80) <> 0;
-    end;
+        BlockRead(F, LineData, 1);
+        J := LineData and %01111111;
+        repeat
+          BlockRead(F, ChannelData, 1);
+          BlockRead(F, Note, 1);
+          BlockRead(F, Effect, 1);
+          ChannelNo := ChannelData and %01111111;
+          if NepperRec.ChannelCount < ChannelNo then
+            NepperRec.ChannelCount := ChannelNo + 1;
+          //
+          InstrNo := ((Note and %10000000) shr 3) or ((Effect and %11110000) shr 4);
+          Octave := (Note and %01110000) shr 4;
+          Note := Note and %00001111;
+          Inc(Note);
+          if Note > 12 then
+          begin
+            Note := 1;
+            Inc(Octave);
+          end;
+          Formats.Patterns[I]^[ChannelNo].Cells[J].Note.Note := Note;
+          Formats.Patterns[I]^[ChannelNo].Cells[J].Note.Octave := Octave;
+          Formats.Patterns[I]^[ChannelNo].Cells[J].InstrumentIndex := InstrNo;
+          if Effect and %00001111 = 0 then
+          begin
+            Word(Formats.Patterns[I]^[ChannelNo].Cells[J].Effect) := 0;
+            Continue; // It has no effect param
+          end;
+          //
+          BlockRead(F, EffectParam, 1);
+          case (Effect and %00001111) of
+            $1:
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('2');
+            $2:
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('1');
+            $3:
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('3');
+            $5:
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('5');
+            $A:
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('A');
+            $C:
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('9');
+            $D:
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('D');
+            $F:
+              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('F');
+          end;
+          Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
+          Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
+        until ((ChannelData and %10000000) <> 0) or EOF(F);
+      until ((LineData and %10000000) <> 0) or EOF(F);
+    end;    
+    Adlib.SetOPL3(0);
+    Result := True;
   end;
 
 begin    

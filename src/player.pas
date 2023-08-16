@@ -334,9 +334,9 @@ AtBeginning:
     PChannel := @PPattern^[CurChannel];
     PCell := @PChannel^.Cells[CurCell];
     PInstrument := @Instruments[PCell^.InstrumentIndex];
+    CurEffect := PCell^.Effect.Effect;
     if Word(PCell^.Effect) <> 0 then
-    begin         
-      CurEffect := PCell^.Effect.Effect;
+    begin
       case Char(CurEffect) of
         '0', #0: // Arpeggio
           begin
@@ -438,11 +438,8 @@ AtBeginning:
         Adlib.NoteOn(CurChannel, NoteByte, OctaveByte);
         LastArpeggioList[CurChannel, CurTicks - 1] := 0;
       end;
-    end
-  end;
-  // Play note
-  for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-  begin
+    end;
+    // Play note
     if not ChannelEnabledList[CurChannel] then
     begin
       if not IsInstr then
@@ -451,10 +448,6 @@ AtBeginning:
     end;
     if CurTicks = LastNoteDelayList[CurChannel] then
     begin
-      PChannel := @PPattern^[CurChannel];
-      PCell := @PChannel^.Cells[CurCell];
-      PInstrument := @Instruments[PCell^.InstrumentIndex];
-      CurEffect := PCell^.Effect.Effect;
       // Note
       if Byte(PCell^.Note) <> 0 then
       begin
@@ -484,22 +477,9 @@ AtBeginning:
       end else
         Screen.WriteTextFast1(ScreenPointer + 63 + CurChannel, $1F, ' ');
     end;
-  end;
-  //
-  if CurTicks = 0 then
-  begin
-    HexStrFast2(CurCell, GS2);
-    Screen.WriteTextFast2(ScreenPointer + 78, ColorStatus, GS2);
-  end;
-  // Post Effect
-  for CurChannel := 0 to NepperRec.ChannelCount - 1 do
-  begin
-    PChannel := @PPattern^[CurChannel];
-    PCell := @PChannel^.Cells[CurCell];
-    PInstrument := @Instruments[PCell^.InstrumentIndex];
+    // Post Effect
     if Word(PCell^.Effect) <> 0 then
-    begin              
-      CurEffect := PCell^.Effect.Effect;
+    begin
       case Char(CurEffect) of
         '1': // Freq slide up
           begin
@@ -531,6 +511,12 @@ AtBeginning:
           end;
       end;
     end;
+  end;
+  //
+  if CurTicks = 0 then
+  begin
+    HexStrFast2(CurCell, GS2);
+    Screen.WriteTextFast2(ScreenPointer + 78, ColorStatus, GS2);
   end;
   //
   Inc(CurTicks);

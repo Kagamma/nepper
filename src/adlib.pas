@@ -204,14 +204,12 @@ asm
 @Pri:
   out dx,al
   // wait a bit
-  in al,dx; in al,dx;
   //
   inc dx
   mov al,Value
   out dx,al
   dec dx
   // wait a bit
-  in al,dx; in al,dx;
 end;
 
 function Chan(const C: Byte): Word; inline;
