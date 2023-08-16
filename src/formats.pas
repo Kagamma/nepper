@@ -267,6 +267,7 @@ var
       BlockRead(F, I, 1);
     end;
     // Read order
+    FillChar(NepperRec.Orders[0], SizeOf(NepperRec.Orders), 0);
     BlockRead(F, OrderLen, 1);
     for I := 0 to OrderLen - 1 do
     begin
