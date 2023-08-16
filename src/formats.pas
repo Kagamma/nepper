@@ -318,8 +318,26 @@ var
             end;
             //
             BlockRead(F, EffectParam, 1);
-            Effect := Effect and %00001111;
-            Word(Formats.Patterns[I]^[ChannelNo].Cells[J].Effect) := 0;
+            case (Effect and %00001111) of
+              $1:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('2');
+              $2:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('1');
+              $3:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('3');
+              $5:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('5');
+              $A:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('A');
+              $C:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('9');
+              $D:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('D');
+              $F:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('F');
+            end;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
           until (ChannelNo and $80) <> 0;
         end;
       until (LineNum and $80) <> 0;
@@ -347,6 +365,7 @@ begin
         end;
       $4441522E: // .RAD
         begin
+          Result := LoadRAD;
         end;
     end;
     Close(F);
