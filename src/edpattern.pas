@@ -93,7 +93,17 @@ end;
 procedure RenderStep;
 begin
   HexStrFast2(CurStep, GS2);
-  WriteText(77, 9, $0F, GS2);
+  WriteText(78, 9, $0F, GS2);
+end;
+
+procedure RenderSpeed;
+begin
+  HexStrFast2(NepperRec.Speed, GS2);
+  WriteText(63, 8, COLOR_LABEL, 'Ticks:');
+  WriteText(70, 8, $0F, GS2);
+  HexStrFast2(NepperRec.Clock, GS2);
+  WriteText(75, 8, COLOR_LABEL, 'Hz:');
+  WriteText(78, 8, $0F, GS2);
 end;
 
 procedure RenderMark;
@@ -173,6 +183,7 @@ begin
   RenderInstrument;
   RenderStep;
   RenderChannelStatus;
+  RenderSpeed;
 end;
 
 procedure RenderPatternInfoOneChannel(const Channel: Byte);
@@ -230,7 +241,7 @@ begin
   WriteText(16, 9, COLOR_LABEL, 'Pattern:');
   WriteText(27, 9, COLOR_LABEL, 'Instr:');
   WriteText(63, 9, COLOR_LABEL, 'Octave:');
-  WriteText(72, 9, COLOR_LABEL, 'Step:');
+  WriteText(73, 9, COLOR_LABEL, 'Step:');
 
   WriteText(0, 23, $0A, '');
   WriteText(0, 24, $0A, '');
