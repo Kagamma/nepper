@@ -225,6 +225,7 @@ var
     C: Char;
     H: TRADHeaderRec;
     InstrData: array[0..$A] of Byte;
+    InstrUsed: array[0..$1F] of Boolean;
     PatternTable: array[0..31] of Word;
   begin
     Result := False;
@@ -232,6 +233,7 @@ var
     if PDWord(@H.Magic[0])^ <> $20444152 then
       Exit;
     // Read desc
+    NepperRec.Name := '';
     if H.Setting.IsDesc = 1 then
     begin
       I := 1;
@@ -246,9 +248,10 @@ var
           Inc(I);
         end;
       until (C = #0) or EOF(F);
-      NepperRec.Name[0] := Char(I);
-    end;
+    end;   
+    NepperRec.Name[0] := Char(40);
     // Read InstrData
+    FillChar(InstrUsed[0], SizeOf(InstrUsed), 0);
     BlockRead(F, I, 1);
     while I <> 0 do
     begin
@@ -264,6 +267,7 @@ var
       Byte(NepperRec.Instruments[I].AlgFeedback) := InstrData[8];
       Byte(NepperRec.Instruments[I].Operators[1].Waveform) := InstrData[9];
       Byte(NepperRec.Instruments[I].Operators[0].Waveform) := InstrData[$A];
+      InstrUsed[I] := True;
       BlockRead(F, I, 1);
     end;
     // Read order
@@ -315,30 +319,38 @@ var
           if Effect and %00001111 = 0 then
           begin
             Word(Formats.Patterns[I]^[ChannelNo].Cells[J].Effect) := 0;
-            Continue; // It has no effect param
+          end else
+          begin
+            //
+            BlockRead(F, EffectParam, 1);
+            case (Effect and %00001111) of
+              $1:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('2');
+              $2:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('1');
+              $3:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('3');
+              $5:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('5');
+              $A:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('A');
+              $C:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('9');
+              $D:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('D');
+              $F:
+                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('F');
+            end;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
           end;
-          //
-          BlockRead(F, EffectParam, 1);
-          case (Effect and %00001111) of
-            $1:
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('2');
-            $2:
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('1');
-            $3:
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('3');
-            $5:
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('5');
-            $A:
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('A');
-            $C:
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('9');
-            $D:
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('D');
-            $F:
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('F');
+          if not InstrUsed[InstrNo] then
+          begin
+            Byte(Formats.Patterns[I]^[ChannelNo].Cells[J].Note) := 0;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('Z');
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := $F;                 
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := 0;
           end;
-          Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
-          Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
         until ((ChannelData and %10000000) <> 0) or EOF(F);
       until ((LineData and %10000000) <> 0) or EOF(F);
     end;    

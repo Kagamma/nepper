@@ -99,7 +99,7 @@ end;
 procedure RenderSpeed;
 begin
   HexStrFast2(NepperRec.Speed, GS2);
-  WriteText(63, 8, COLOR_LABEL, 'Ticks:');
+  WriteText(64, 8, COLOR_LABEL, 'Ticks:');
   WriteText(70, 8, $0F, GS2);
   HexStrFast2(NepperRec.Clock, GS2);
   WriteText(75, 8, COLOR_LABEL, 'Hz:');
