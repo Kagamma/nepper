@@ -323,6 +323,8 @@ var
           begin
             //
             BlockRead(F, EffectParam, 1);
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
             case (Effect and %00001111) of
               $1:
                 Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('2');
@@ -343,18 +345,13 @@ var
               else
                 Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := 0;
             end;
-            if Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect <> 0 then
-            begin
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := (EffectParam and %11110000) shr 4;
-              Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := EffectParam and %00001111;
-            end;
           end;
           if not InstrUsed[InstrNo] then
           begin
             Byte(Formats.Patterns[I]^[ChannelNo].Cells[J].Note) := 0;
             Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('Z');
             Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := $F;                 
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := 0;
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := 4;
           end;
         until ((ChannelData and %10000000) <> 0) or EOF(F);
       until ((LineData and %10000000) <> 0) or EOF(F);
