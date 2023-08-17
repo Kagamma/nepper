@@ -286,7 +286,8 @@ begin
               OldCursorX := CursorX;
               OldCursorY := CursorY;
               if ShowInputDialog('Load song', S) then
-              begin     
+              begin
+                Player.Stop;
                 if not LoadSong(S) then
                   ShowMessageDialog('Error', 'File not found / Invalid format!');
                 S := '';

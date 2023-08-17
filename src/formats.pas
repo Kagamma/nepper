@@ -252,7 +252,7 @@ var
     NepperRec.Name[0] := Char(40);
     // Is slow?
     if H.Setting.IsSlow = 1 then
-      NepperRec.Clock := 18
+      NepperRec.Clock := 50 // TODO:
     else
       NepperRec.Clock := 50;
     // Read InstrData
