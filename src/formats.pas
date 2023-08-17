@@ -338,9 +338,29 @@ var
               $3:
                 Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('3');
               $5:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('5');
+                begin
+                  Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('5');
+                  if (EffectParam >= 1) and (EffectParam <= 49) then
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := Min(EffectParam, $F)
+                  else
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := 0;
+                  if (EffectParam >= 51) and (EffectParam <= 99) then
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := Min(EffectParam - 51, $F)
+                  else
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := 0;
+                end;
               $A:
-                Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('A');
+                begin
+                  Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('A');
+                  if (EffectParam >= 1) and (EffectParam <= 49) then
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := Min(EffectParam, $F)
+                  else
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := 0;         
+                  if (EffectParam >= 51) and (EffectParam <= 99) then
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := Min(EffectParam - 51, $F)
+                  else
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := 0;
+                end;
               $C:
                 Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('9');
               $D:
