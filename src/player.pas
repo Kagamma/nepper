@@ -413,10 +413,16 @@ AtBeginning:
                 $F:
                   begin
                     case Byte(Word(PCell^.Effect.V2)) of
-                      0: // Stop note
-                        Adlib.NoteClear(CurChannel);
+                      0: // Stop note       
+                        begin
+                          Adlib.NoteClear(CurChannel);
+                          LastInstrumentList[CurChannel] := $FF;
+                        end;
                       4: // Fade note
-                        Adlib.NoteOff(CurChannel);
+                        begin
+                          Adlib.NoteOff(CurChannel);
+                          LastInstrumentList[CurChannel] := $FF;
+                        end;
                     end;
                   end;
               end;
