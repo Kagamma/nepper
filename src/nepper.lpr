@@ -35,6 +35,5 @@ begin
     end;
   until KBInput.ScanCode = SCAN_ESC;
   Player.Stop;
-  Adlib.Reset;
 end.
 

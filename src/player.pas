@@ -573,6 +573,10 @@ var
 begin
   IsPlaying := False;
   FillChar(BlankInstr, SizeOf(BlankInstr), 0);
+  BlankInstr.Operators[0].Volume.Total := $3F;      
+  BlankInstr.Operators[1].Volume.Total := $3F;
+  BlankInstr.Operators[2].Volume.Total := $3F;
+  BlankInstr.Operators[3].Volume.Total := $3F;
   for I := 0 to 8 do
   begin
     Adlib.SetInstrument(I, @BlankInstr);
