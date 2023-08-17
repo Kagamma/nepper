@@ -709,7 +709,11 @@ begin
       Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
     end;
   until (KBInput.ScanCode = SCAN_ESC) or (KBInput.ScanCode = SCAN_F2);
-  Adlib.NoteOff(8);
+  if CurInstr^.Is4Op then
+    V := 8
+  else
+    V := 5;
+  Adlib.NoteClear(V);
   IsInstr := False;
 end;
 
