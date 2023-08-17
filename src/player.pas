@@ -533,7 +533,9 @@ AfterPlayingNote:
     CurTicks := 0;
     // Change to next PPattern
     if CurCell >= $3F then
-    begin
+    begin    
+      Move(NepperRec.Instruments[0], Instruments[0], SizeOf(Instruments)); 
+      FillChar(LastInstrumentList[0], SizeOf(LastInstrumentList), $FF);
       if IsPatternOnly then
       begin
         CurCell := NextCell;
