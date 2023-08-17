@@ -140,6 +140,7 @@ type
     Is4Op: Boolean;
     Name: String[20];
   end;
+  TWriteRegProc = procedure(const Reg: Word; Value: Byte);
 
 var
   VolumeModList: array[0..MAX_CHANNELS - 1] of ShortInt;
@@ -159,16 +160,18 @@ procedure NoteOff(const Channel: Byte);
 procedure NoteClear(const Channel: Byte);
 procedure SetRegFreq(const Channel: Byte; const Freq: Word); inline;
 procedure ModifyRegFreq(const Channel: Byte; const Freq: Integer; const Ticks: Byte); inline;
-procedure WriteReg(const Reg: Word; Value: Byte);
 procedure WriteNoteReg(const Channel: Byte; const Reg: PAdlibRegA0B8);
 procedure SetOPL3(const V: Byte);
+
+var
+  WriteReg: TWriteRegProc;
 
 implementation
 
 uses
   Utils;
 
-procedure WriteReg(const Reg: Word; Value: Byte); assembler;
+procedure WriteRegSlow(const Reg: Word; Value: Byte); assembler;
 asm
   mov ax,Reg
   mov dx,ADLIB_PORT_STATUS
@@ -399,14 +402,14 @@ var
 begin
   // We simply check adlib card's existence by making timer 1's register overflow,
   // then check for bit 6 & 7 in time control register
-  WriteReg($04, $60); // Reset both timers
-  WriteReg($04, $80); // Enable timer interrupt
+  WriteRegSlow($04, $60); // Reset both timers
+  WriteRegSlow($04, $80); // Enable timer interrupt
   S1 := Port[ADLIB_PORT_STATUS];
-  WriteReg($02, $FF);                   
-  WriteReg($04, $21); // Start timer 1
+  WriteRegSlow($02, $FF);
+  WriteRegSlow($04, $21); // Start timer 1
   S2 := Port[ADLIB_PORT_STATUS];
-  WriteReg($04, $60);
-  WriteReg($04, $80);
+  WriteRegSlow($04, $60);
+  WriteRegSlow($04, $80);
   S1 := S1 and $E0;
   S2 := S2 and $E0;
   if (S1 = $00) and (S2 = $C0) then
@@ -416,24 +419,24 @@ begin
 end;
 
 procedure Init;
-var
-  BD: TAdlibRegBD;
 begin
   Reset;
-  BD.AMDepth := 1;
-  BD.Vibrato := 1;
-  WriteReg($BD, Byte(BD));
+  WriteReg($BD, %11000000); // Deep vibrato & tremolo
+  WriteReg($1, $20); // Allows waveforms
 end;
 
 procedure Reset;
 var
   I: Byte;
-begin
-  for I := 0 to 245 do
-    WriteReg(I, 0);
+begin      
   if IsOPL3Avail then
+  begin
+    SetOPL3(1);
     for I := 0 to 245 do
       WriteReg($100 + I, 0);
+  end;
+  for I := 0 to 245 do
+    WriteReg(I, 0);
 end;
 
 procedure WriteNoteReg(const Channel: Byte; const Reg: PAdlibRegA0B8);
@@ -509,7 +512,11 @@ initialization
     Halt;
   end;
   if Adlib.IsOPL3Avail then
+  begin
+    WriteReg := @WriteRegFast;
     Writeln('OPL3 found!');
+  end else
+    WriteReg := @WriteRegSlow;
   FillChar(VolumeModList[0], SizeOf(VolumeModList), 0);
 
 end.

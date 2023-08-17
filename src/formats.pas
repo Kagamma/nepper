@@ -250,6 +250,11 @@ var
       until (C = #0) or EOF(F);
     end;   
     NepperRec.Name[0] := Char(40);
+    // Is slow?
+    if H.Setting.IsSlow = 1 then
+      NepperRec.Clock := 18
+    else
+      NepperRec.Clock := 50;
     // Read InstrData
     FillChar(InstrUsed[0], SizeOf(InstrUsed), 0);
     BlockRead(F, I, 1);
