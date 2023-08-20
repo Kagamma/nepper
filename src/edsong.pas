@@ -99,10 +99,10 @@ procedure LoopEditSheet;
       begin
         PatternAnchor := PatternIndex;
         RenderSongInfoFast;
-        Screen.SetCursorPosition(10, 7);
+        Screen.SetCursorPosition(10 + 1, 7);
       end else
-        Screen.SetCursorPosition(10 + (PatternIndex - PatternAnchor) * 3, 7);
-      Input.InputCursor := 1;
+        Screen.SetCursorPosition(10 + (PatternIndex - PatternAnchor) * 3 + 1, 7);
+      Input.InputCursor := 2;
     end;
   end;
 
