@@ -154,7 +154,7 @@ var
   FreqRegsBack: array[0..MAX_CHANNELS - 1] of TAdlibRegA0B8;
   FreqPrecisionList: array[0..MAX_CHANNELS - 1] of DWord;
   IsOPL3Avail: Boolean = False;
-  IsOPL3Enabled: Boolean;
+  IsOPL3Op4Enabled: Boolean;
 
 function Check: Boolean;
 procedure Init;
@@ -224,7 +224,7 @@ end;
 
 function Chan(const C: Byte): Word; inline;
 begin
-  if IsOPL3Enabled then
+  if IsOPL3Op4Enabled then
     Result := ADLIB_CHANNELS_OPL3[C]
   else
     Result := C;
@@ -241,7 +241,7 @@ var
 
   procedure AdjustVolume(const V: Byte); inline;
   begin
-    if IsOPL3Enabled and ((Channel <= 2) or (Channel >= 6)) then
+    if IsOPL3Op4Enabled and ((Channel <= 2) or (Channel >= 6)) then
       case Inst^.AlgFeedback.Alg2 of
         0:
           begin
@@ -280,7 +280,7 @@ var
   end;
 
 begin
-  if IsOPL3Enabled then
+  if IsOPL3Op4Enabled then
   begin
     C := Chan(Channel);
     for I := 0 to 3 do
@@ -335,7 +335,7 @@ var
 
   procedure AdjustVolume(const V: Byte); inline;
   begin
-    if IsOPL3Enabled and ((Channel <= 2) or (Channel >= 6)) then
+    if IsOPL3Op4Enabled and ((Channel <= 2) or (Channel >= 6)) then
       case Inst^.AlgFeedback.Alg2 of
         0:
           begin
@@ -374,7 +374,7 @@ var
   end;
 
 begin
-  if IsOPL3Enabled then
+  if IsOPL3Op4Enabled then
   begin
     for I := 0 to 3 do
     begin
@@ -511,19 +511,19 @@ begin
     aokOPL2:
       begin
         WriteReg($105, 0);
-        IsOPL3Enabled := False;
+        IsOPL3Op4Enabled := False;
       end;
     aokOPL3Op2:
       begin
         WriteReg($105, 1);
         WriteReg($104, 0);
-        IsOPL3Enabled := True;
+        IsOPL3Op4Enabled := False;
       end;
     aokOPL3Op4:
       begin
         WriteReg($105, 1);
         WriteReg($104, $3F);
-        IsOPL3Enabled := True;
+        IsOPL3Op4Enabled := True;
       end;
   end;
 end;

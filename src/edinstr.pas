@@ -147,7 +147,7 @@ begin
   Str(TestNote.Octave, S);
   WriteText(77, 22, $0F, ADLIB_NOTESYM_TABLE[TestNote.Note]);
   WriteText(79, 22, $0F, S);
-  if Adlib.IsOPL3Enabled and CurInstr^.Is4Op then
+  if Adlib.IsOPL3Op4Enabled and CurInstr^.Is4Op then
     WriteText(77, 21, $0F, '4')
   else
     WriteText(77, 21, $0F, '2');
