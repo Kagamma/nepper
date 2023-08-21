@@ -60,10 +60,16 @@ begin
         end;
     end;
   end;
-  if NepperRec.IsOPL3 then
-    WriteText(58, 8, $03, 'OPL3')
-  else
-    WriteText(58, 8, $03, '', 4);
+  if TAdlibOPLKind(NepperRec.OPLKind) <> aokOPL2 then
+  begin
+    if TAdlibOPLKind(NepperRec.OPLKind) = aokOPL3Op2 then
+      WriteText(53, 8, $03, 'OPL3 Op-2')
+    else
+      WriteText(53, 8, $03, 'OPL3 Op-4');
+  end else
+  begin
+    WriteText(53, 8, $03, '', 9);
+  end;
 end;
 
 procedure RenderSongInfo;
@@ -160,6 +166,7 @@ procedure LoopEditSheet;
 
 var
   S: String20;
+  I,
   OldCursorX,
   OldCursorY: Byte;
 begin
@@ -214,8 +221,10 @@ begin
         end;
       SCAN_F10:
         begin
-          NepperRec.IsOPL3 := not NepperRec.IsOPL3;
-          Adlib.SetOPL3(Byte(NepperRec.IsOPL3));
+          Inc(NepperRec.OPLKind);
+          if NepperRec.OPLKind > 2 then
+            NepperRec.OPLKind := 0;
+          Adlib.SetOPL3(TAdlibOPLKind(NepperRec.OPLKind));
           RenderSongInfoFast;
         end;
       SCAN_F1:

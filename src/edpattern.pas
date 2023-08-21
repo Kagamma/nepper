@@ -10,7 +10,7 @@ uses
 var
   IsPatternEdit: Boolean = False;
 
-procedure RenderCommonTexts; 
+procedure RenderCommonTexts;
 procedure ResetParams;
 procedure RenderPatternInfo;
 procedure Loop;
@@ -20,7 +20,7 @@ implementation
 uses
   Input, Keyboard, Screen, Formats, EdSong, Player, Dialogs, Clipbrd;
 
-const            
+const
   PATTERN_SCREEN_START_X = 4;
   PATTERN_SCREEN_START_Y = 11;
   PATTERN_SCREEN_SIZE = 11;
@@ -69,7 +69,7 @@ end;
 procedure RenderOctave; inline;
 begin
   WriteText(70, 9, $0F, Char(CurOctave + Byte('0')));
-end; 
+end;
 
 procedure RenderPatternIndex; inline;
 var
@@ -228,7 +228,7 @@ begin
   WriteText(0, 0, $1F, '                                   - Nepper -', 80);
   WriteText(0, 1, $0E, '  [F1] Help [F2] Song/Pattern Editor [F3] Instrument Editor [ESC] Exit Nepper');
 
-  WriteText(0, 3, $4E, ' SONG DATA    ');    
+  WriteText(0, 3, $4E, ' SONG DATA    ');
   WriteText(0, 3, $4E, ' SONG DATA    ');
   WriteText(0, 5, COLOR_LABEL, 'Song name:');
   WriteText(63, 5, COLOR_LABEL, 'SPECIAL COMMANDS:');
@@ -251,7 +251,7 @@ begin
 end;
 
 procedure RenderTexts;
-begin      
+begin
   WriteText(0, 0, $1A, 'PATTERN EDIT');
   WriteText(0, 23, $0A, '[TAB] Song [INS-DEL] I/D  [<>] Instr.sel   [SF-UP/DN] Step   [CTL-X/C/V] Ct/Cp/P', 80);
   WriteText(0, 24, $0A, '[SPC] P/S  [CR] Edit mode [+-] Pattern.sel [SF-LF/RN] Octave [F5] Copy mark', 80);
@@ -366,7 +366,7 @@ var
       's':
         begin
           SetTone(2, CurOctave);
-        end;    
+        end;
       'x':
         begin
           SetTone(3, CurOctave);
@@ -465,7 +465,7 @@ var
           SCAN_INS:
             begin
               InsertTone;
-            end;                  
+            end;
           SCAN_DEL:
             begin
               DeleteTone;
@@ -508,7 +508,7 @@ var
     end;
   begin
     if not IsMarked then
-    begin 
+    begin
       Clipbrd.ClipbrdCellStart := -1;
       for I := 0 to $3F do
       begin
@@ -568,7 +568,7 @@ var
     end else
     begin
       for I := 0 to $3F do
-      begin    
+      begin
         PC^.Cells[CurCell + I].Note := ClipbrdCells[I].Note;
         PC^.Cells[CurCell + I].InstrumentIndex := ClipbrdCells[I].InstrumentIndex;
         if I + CurCell >= $3F then
@@ -584,7 +584,7 @@ var
     if not IsMarked then
     begin
       Clipbrd.ClipbrdCellStart := -1;
-      for I := 0 to $3F do 
+      for I := 0 to $3F do
         ClipbrdCells[I].Effect := PC^.Cells[I].Effect;
     end else
     begin
@@ -638,10 +638,10 @@ var
           Break;
       end;
     end;
-  end; 
+  end;
 
   procedure DoCut;
-  begin   
+  begin
     Clipbrd.ClipbrdCellEnd := CurCell;
     if CurCellPart = 0 then
       CutNotes
@@ -652,12 +652,12 @@ var
   end;
 
   procedure DoCopy;
-  begin  
+  begin
     Clipbrd.ClipbrdCellEnd := CurCell;
     if CurCellPart = 0 then
       CopyNotes
     else
-      CopyEffects; 
+      CopyEffects;
     DisableMark;
   end;
 
@@ -683,7 +683,7 @@ begin
       Word(PC^.Cells[CurCell].Effect) := W;
       WriteTextSync(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor, $0F, S, 3);
       if KBInput.ScanCode = $FF then
-      begin 
+      begin
         if Input.InputCursor <> OldInputCursor then
         begin
           Input.InputCursor := OldInputCursor;
@@ -759,7 +759,7 @@ begin
       SCAN_HOME:
         begin
           MoveUp($3F);
-        end;   
+        end;
       SCAN_END:
         begin
           MoveDown($3F);
@@ -826,7 +826,7 @@ begin
                 CurPattern := Formats.Patterns[CurPatternIndex];
                 RenderPatternInfo;
               end;
-            end; 
+            end;
           '<':
             begin
               if CurInstrIndex > 0 then
@@ -882,7 +882,7 @@ end;
 function LoopEditOctave: Boolean;
 var
   PC: PNepperChannel;
-begin  
+begin
   PC := @CurPattern^[CurChannel];
   Result := False;
   if Keyboard.IsShift then
@@ -909,7 +909,7 @@ begin
 end;
 
 function LoopEditStep: Boolean;
-begin      
+begin
   Result := False;
   if Keyboard.IsShift then
     case KBInput.ScanCode of
@@ -919,7 +919,7 @@ begin
           begin
             Inc(CurStep);
             RenderStep;
-          end;    
+          end;
           Result := True;
         end;
       SCAN_DOWN:
@@ -937,7 +937,7 @@ end;
 procedure Loop;
 begin
   ResetParams;
-  RenderTexts; 
+  RenderTexts;
   Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE), PATTERN_SCREEN_START_Y + CurCell - Anchor);
   repeat
     Keyboard.WaitForInput;
@@ -962,7 +962,7 @@ end;
 initialization
   VirtualSheetPointer := AllocMem(80*64*2);
   CurPattern := Formats.Patterns[0];
-  CurPatternIndex := 0;  
+  CurPatternIndex := 0;
   GS3[0] := Char(3);
   GS2[0] := Char(2);
 

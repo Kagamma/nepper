@@ -69,6 +69,12 @@ type
   TBit7 = 0..127;
   TBit10 = 0..1023;
 
+  TAdlibOPLKind = (
+    aokOPL2 = 0,
+    aokOPL3Op4 = 1,
+    aokOPL3Op2 = 2
+  );
+
   TAdlibReg2035 = bitpacked record
     ModFreqMult: TBit4;
     KSR: TBit1;
@@ -153,7 +159,7 @@ var
 function Check: Boolean;
 procedure Init;
 procedure Reset;
-procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);        
+procedure SetInstrument(const Channel: Byte; const Inst: PAdlibInstrument);
 procedure SetVolume(const Channel: Byte; const Inst: PAdlibInstrument);
 procedure NoteOn(const Channel, Note, Octave: Byte; const FineTune: ShortInt = 0);
 procedure NoteOff(const Channel: Byte);
@@ -161,7 +167,7 @@ procedure NoteClear(const Channel: Byte);
 procedure SetRegFreq(const Channel: Byte; const Freq: Word); inline;
 procedure ModifyRegFreq(const Channel: Byte; const Freq: Integer; const Ticks: Byte); inline;
 procedure WriteNoteReg(const Channel: Byte; const Reg: PAdlibRegA0B8);
-procedure SetOPL3(const V: Byte);
+procedure SetOPL3(const V: TAdlibOPLKind);
 
 var
   WriteReg: TWriteRegProc;
@@ -238,7 +244,7 @@ var
     if IsOPL3Enabled and ((Channel <= 2) or (Channel >= 6)) then
       case Inst^.AlgFeedback.Alg2 of
         0:
-          begin     
+          begin
             if I = 3 then
               Volume.Total := V;
           end;
@@ -248,12 +254,12 @@ var
               Volume.Total := V;
           end;
         2:
-          begin     
+          begin
             if (I = 1) or (I = 3) then
               Volume.Total := V;
           end;
         3:
-          begin    
+          begin
             if (I = 0) or (I = 2) or (I = 3) then
               Volume.Total := V;
           end;
@@ -261,12 +267,12 @@ var
     else
       case Inst^.AlgFeedback.Alg2 of
         0:
-          begin    
+          begin
             if (I = 0) or (I = 1) then
               Volume.Total := V;
           end;
         1:
-          begin         
+          begin
             if I = 1 then
               Volume.Total := V;
           end;
@@ -428,13 +434,14 @@ end;
 procedure Reset;
 var
   I: Byte;
-begin      
+begin
   if IsOPL3Avail then
   begin
-    SetOPL3(1);
+    SetOPL3(aokOPL3Op4);
     for I := 0 to 245 do
       WriteReg($100 + I, 0);
   end;
+  SetOPL3(aokOPL2);
   for I := 0 to 245 do
     WriteReg(I, 0);
 end;
@@ -442,7 +449,7 @@ end;
 procedure WriteNoteReg(const Channel: Byte; const Reg: PAdlibRegA0B8);
 var
   C: Word;
-begin  
+begin
   C := Chan(Channel);
   WriteReg($A0 + C, Lo(Word(Reg^)));
   WriteReg($B0 + C, Hi(Word(Reg^)));
@@ -454,12 +461,12 @@ var
   C: Word;
 begin
   C := Chan(Channel);
-  N := @FreqRegs[Channel];  
+  N := @FreqRegs[Channel];
   N^.KeyOn := 0;
   WriteReg($B0 + C, Hi(Word(N^)));
   N^.Freq := ADLIB_FREQ_TABLE[Note] + FineTune;
   N^.Octave := Octave;
-  N^.KeyOn := 1;   
+  N^.KeyOn := 1;
   FreqPrecisionList[Channel] := DWord(N^.Freq) shl 8;
   WriteReg($A0 + C, Lo(Word(N^)));
   WriteReg($B0 + C, Hi(Word(N^)));
@@ -470,14 +477,14 @@ procedure NoteOff(const Channel: Byte);
 var
   C: Word;
   N: PAdlibRegA0B8;
-begin 
+begin
   C := Chan(Channel);
   N := @FreqRegs[Channel];
   N^.KeyOn := 0;
   WriteReg($B0 + C, Hi(Word(N^)));
 end;
 
-procedure NoteClear(const Channel: Byte);   
+procedure NoteClear(const Channel: Byte);
 var
   C: Word;
 begin
@@ -498,14 +505,30 @@ begin
   FreqRegs[Channel].Freq := FreqPrecisionList[Channel] shr 8;
 end;
 
-procedure SetOPL3(const V: Byte);
+procedure SetOPL3(const V: TAdlibOPLKind);
 begin
-  WriteReg($105, V);
-  WriteReg($104, $3F);
-  IsOPL3Enabled := Boolean(V);
+  case V of
+    aokOPL2:
+      begin
+        WriteReg($105, 0);
+        IsOPL3Enabled := False;
+      end;
+    aokOPL3Op2:
+      begin
+        WriteReg($105, 1);
+        WriteReg($104, 0);
+        IsOPL3Enabled := True;
+      end;
+    aokOPL3Op4:
+      begin
+        WriteReg($105, 1);
+        WriteReg($104, $3F);
+        IsOPL3Enabled := True;
+      end;
+  end;
 end;
 
-initialization 
+initialization
   if not Adlib.Check then
   begin
     Writeln('ERROR: AdLib sound card not found!');

@@ -49,13 +49,13 @@ type
   PNepperPattern = ^TNepperPattern;
   TNepperPattern = array[0..MAX_CHANNELS - 1] of TNepperChannel;
 
-  TNepperRec = packed record  
+  TNepperRec = packed record
     Magic: Word;
     Version: Byte;
     Name: String[40];
     Speed: Byte;
     Clock: Byte;
-    IsOPL3: Boolean;
+    OPLKind: Byte;
     ChannelCount: ShortInt;
     Instruments: array[0..31] of TAdlibInstrument;
     Orders: array[0..$FF] of Byte;
@@ -103,7 +103,7 @@ function LoadInstrument(FileName: String; const Inst: PAdlibInstrument): Boolean
 var
   H: TNepperInstrumentHeader;
   F: File;
-begin     
+begin
   Result := False;
   if FileName = '' then
     Exit;
@@ -159,7 +159,7 @@ begin
         end;
       end;
       if IsDirty then
-      begin                                                        
+      begin
         BlockWrite(F, I, 1);
         BlockWrite(F, J, 1);
         BlockWrite(F, K, 1);
@@ -170,7 +170,7 @@ begin
   Close(F);
 end;
 
-function LoadSong(FileName: String): Boolean; 
+function LoadSong(FileName: String): Boolean;
 var
   F: File;
 
@@ -198,7 +198,7 @@ var
       BlockRead(F, K, 1);
       BlockRead(F, Formats.Patterns[I]^[J].Cells[K], SizeOf(TNepperChannelCells) - K);
     end;
-    Adlib.SetOPL3(Byte(NepperRec.IsOPL3));
+    Adlib.SetOPL3(TAdlibOPLKind(NepperRec.OPLKind));
     Result := True;
   end;
 
@@ -248,7 +248,7 @@ var
           Inc(I);
         end;
       until (C = #0) or EOF(F);
-    end;   
+    end;
     NepperRec.Name[0] := Char(40);
     // Is slow?
     if H.Setting.IsSlow = 1 then
@@ -355,7 +355,7 @@ var
                   if (EffectParam >= 1) and (EffectParam <= 49) then
                     Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := Min(EffectParam, $F)
                   else
-                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := 0;         
+                    Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := 0;
                   if (EffectParam >= 51) and (EffectParam <= 99) then
                     Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := Min(EffectParam - 51, $F)
                   else
@@ -375,18 +375,18 @@ var
           begin
             Byte(Formats.Patterns[I]^[ChannelNo].Cells[J].Note) := 0;
             Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.Effect := Byte('Z');
-            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := $F;                 
+            Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V1 := $F;
             Formats.Patterns[I]^[ChannelNo].Cells[J].Effect.V2 := 4;
           end;
         until ((ChannelData and %10000000) <> 0) or EOF(F);
       until ((LineData and %10000000) <> 0) or EOF(F);
-    end;    
-    Adlib.SetOPL3(0);
+    end;
+    Adlib.SetOPL3(aokOPL2);
     Result := True;
   end;
 
-begin    
-  Result := False; 
+begin
+  Result := False;
   if FileName = '' then
     Exit;
   if FindCharPos(FileName, '.') = 0 then

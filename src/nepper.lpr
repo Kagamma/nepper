@@ -12,7 +12,7 @@ begin
   KBInput.ScanCode := SCAN_F2;
   IsPatternEdit := False;
   repeat
-    case KBInput.ScanCode of  
+    case KBInput.ScanCode of
       SCAN_F2:
         begin
           ClrScr;

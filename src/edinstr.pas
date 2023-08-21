@@ -37,7 +37,7 @@ var
   MenuList: array[0..53] of TEdInstrMenuItem;
 
 procedure ResetParams;
-begin                           
+begin
   Input.InputCursor := 1;
   Screen.SetCursorPosition(MenuList[CurMenuPos].X, MenuList[CurMenuPos].Y);
 end;
@@ -63,7 +63,7 @@ begin
   WriteTextBack(OP1_X, 16, COLOR_LABEL, 'Scale Envelope:');
   WriteTextBack(OP1_X, 17, COLOR_LABEL, 'Vibrato:');
   WriteTextBack(OP1_X, 18, COLOR_LABEL, 'Tremolo:');
-  
+
   WriteTextBack(OP2_X, 3, COLOR_LABEL, 'Inst. name:');
   WriteTextBack(OP2_X, 4, COLOR_LABEL, 'Feedback:');
   WriteTextBack(OP2_X + 2, 6, $4E, '     Operator 2    ');
@@ -94,7 +94,7 @@ begin
   WriteTextBack(OP3_X, 16, COLOR_LABEL, 'Scale Envelope:');
   WriteTextBack(OP3_X, 17, COLOR_LABEL, 'Vibrato:');
   WriteTextBack(OP3_X, 18, COLOR_LABEL, 'Tremolo:');
-                  
+
   WriteTextBack(OP4_X, 4, COLOR_LABEL, 'Panning:');
   WriteTextBack(OP4_X + 2, 6, $4E, '     Operator 4    ');
   WriteTextBack(OP4_X, 7,  COLOR_LABEL, 'Attack:');
@@ -109,7 +109,7 @@ begin
   WriteTextBack(OP4_X, 16, COLOR_LABEL, 'Scale Envelope:');
   WriteTextBack(OP4_X, 17, COLOR_LABEL, 'Vibrato:');
   WriteTextBack(OP4_X, 18, COLOR_LABEL, 'Tremolo:');
-                                      
+
   WriteTextBack(76, 21, COLOR_LABEL, 'Test operator mode:');
   WriteTextBack(76, 22, COLOR_LABEL, 'Test tone:');
   WriteText(0, 23, $0A, '[L] Load [<] Prev [SPC] Test  [+] Test Tone Up   [F10] Test operator mode');
@@ -126,7 +126,7 @@ begin
   WriteText(OP1_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Alg2));
   WriteText(OP2_X + 1, 3, $0F, CurInstr^.Name, 20);
   WriteText(OP2_X + 1, 4, $0F, HexStrFast2(CurInstr^.AlgFeedback.Feedback));
-  WriteText(OP3_X + 1, 4, $0F, HexStrFast2(CurInstr^.FineTune));              
+  WriteText(OP3_X + 1, 4, $0F, HexStrFast2(CurInstr^.FineTune));
   WriteText(OP4_X + 1, 4, $0F, ByteToPanning(CurInstr^.AlgFeedback.Panning));
   for I := 0 to 3 do
   begin
@@ -139,7 +139,7 @@ begin
     WriteText((OP1_X + 1) + Ofs, 12, $0F, HexStrFast2(CurInstr^.Operators[I].Volume.Scaling));
     WriteText((OP1_X + 1) + Ofs, 13, $0F, HexStrFast2(CurInstr^.Operators[I].Effect.ModFreqMult));;
     WriteText((OP1_X + 1) + Ofs, 14, $0F, HexStrFast2(CurInstr^.Operators[I].Waveform.Waveform));
-    WriteText((OP1_X + 1) + Ofs, 15, $0F, ByteToYesNo(CurInstr^.Operators[I].Effect.EGTyp), 3); 
+    WriteText((OP1_X + 1) + Ofs, 15, $0F, ByteToYesNo(CurInstr^.Operators[I].Effect.EGTyp), 3);
     WriteText((OP1_X + 1) + Ofs, 16, $0F, ByteToYesNo(CurInstr^.Operators[I].Effect.KSR), 3);
     WriteText((OP1_X + 1) + Ofs, 17, $0F, ByteToYesNo(CurInstr^.Operators[I].Effect.Vib), 3);
     WriteText((OP1_X + 1) + Ofs, 18, $0F, ByteToYesNo(CurInstr^.Operators[I].Effect.AmpMod), 3);
@@ -194,37 +194,37 @@ begin
           CurInstr^.Operators[0].SustainRelease.Sustain := $F - V;
         end;
       5:
-        begin                    
+        begin
           V := CurInstr^.Operators[0].SustainRelease.Release;
           Input.InputHex2(S, V, $F);
           CurInstr^.Operators[0].SustainRelease.Release := V;
         end;
       6:
-        begin          
+        begin
           V := $3F - CurInstr^.Operators[0].Volume.Total;
           Input.InputHex2(S, V, $3F);
           CurInstr^.Operators[0].Volume.Total := $3F - V;
-        end;  
+        end;
       7:
-        begin             
+        begin
           V := CurInstr^.Operators[0].Volume.Scaling;
           Input.InputHex2(S, V, 3);
           CurInstr^.Operators[0].Volume.Scaling := V;
         end;
       8:
-        begin      
+        begin
           V := CurInstr^.Operators[0].Effect.ModFreqMult;
           Input.InputHex2(S, V, $F);
           CurInstr^.Operators[0].Effect.ModFreqMult := V;
         end;
       9:
-        begin   
+        begin
           V := CurInstr^.Operators[0].Waveform.Waveform;
           Input.InputHex2(S, V, $7);
           CurInstr^.Operators[0].Waveform.Waveform := V;
         end;
       10:
-        begin                
+        begin
           V := CurInstr^.Operators[0].Effect.EGTyp;
           Input.InputYesNo(S, V);
           CurInstr^.Operators[0].Effect.EGTyp := V;
@@ -236,13 +236,13 @@ begin
           CurInstr^.Operators[0].Effect.KSR := V;
         end;
       12:
-        begin           
+        begin
           V := CurInstr^.Operators[0].Effect.Vib;
           Input.InputYesNo(S, V);
           CurInstr^.Operators[0].Effect.Vib := V;
         end;
       13:
-        begin        
+        begin
           V := CurInstr^.Operators[0].Effect.AmpMod;
           Input.InputYesNo(S, V);
           CurInstr^.Operators[0].Effect.AmpMod := V;
@@ -254,66 +254,66 @@ begin
           S := CurInstr^.Name;
         end;
       15:
-        begin   
+        begin
           V := CurInstr^.AlgFeedback.Feedback;
           Input.InputHex2(S, V, 7);
           CurInstr^.AlgFeedback.Feedback := V;
         end;
       //
       16:
-        begin                    
+        begin
           V := CurInstr^.Operators[1].AttackDecay.Attack;
           Input.InputHex2(S, V, $F);
           CurInstr^.Operators[1].AttackDecay.Attack := V;
         end;
       17:
-        begin             
+        begin
           V := CurInstr^.Operators[1].AttackDecay.Decay;
           Input.InputHex2(S, V, $F);
           CurInstr^.Operators[1].AttackDecay.Decay := V;
         end;
       18:
-        begin                       
+        begin
           V := $F - CurInstr^.Operators[1].SustainRelease.Sustain;
           Input.InputHex2(S, V, $F);
           CurInstr^.Operators[1].SustainRelease.Sustain := $F - V;
         end;
       19:
-        begin                    
+        begin
           V := CurInstr^.Operators[1].SustainRelease.Release;
           Input.InputHex2(S, V, $F);
           CurInstr^.Operators[1].SustainRelease.Release := V;
         end;
       20:
-        begin       
+        begin
           V := $3F - CurInstr^.Operators[1].Volume.Total;
           Input.InputHex2(S, V, $3F);
           CurInstr^.Operators[1].Volume.Total := $3F - V;
         end;
       21:
-        begin     
+        begin
           V := CurInstr^.Operators[1].Volume.Scaling;
           Input.InputHex2(S, V, 3);
           CurInstr^.Operators[1].Volume.Scaling := V;
         end;
       22:
-        begin              
+        begin
           V := CurInstr^.Operators[1].Effect.ModFreqMult;
           Input.InputHex2(S, V, $F);
           CurInstr^.Operators[1].Effect.ModFreqMult := V;
         end;
       23:
-        begin            
+        begin
           V := CurInstr^.Operators[1].Waveform.Waveform;
           Input.InputHex2(S, V, $7);
           CurInstr^.Operators[1].Waveform.Waveform := V;
         end;
       24:
-        begin                 
+        begin
           V := CurInstr^.Operators[1].Effect.EGTyp;
           Input.InputYesNo(S, V);
           CurInstr^.Operators[1].Effect.EGTyp := V;
-        end; 
+        end;
       25:
         begin
           V := CurInstr^.Operators[1].Effect.KSR;
@@ -321,20 +321,20 @@ begin
           CurInstr^.Operators[1].Effect.KSR := V;
         end;
       26:
-        begin                
+        begin
           V := CurInstr^.Operators[1].Effect.Vib;
           Input.InputYesNo(S, V);
           CurInstr^.Operators[1].Effect.Vib := V;
         end;
       27:
-        begin    
+        begin
           V := CurInstr^.Operators[1].Effect.AmpMod;
           Input.InputYesNo(S, V);
           CurInstr^.Operators[1].Effect.AmpMod := V;
         end;
       //
       28:
-        begin                      
+        begin
           V := Byte(CurInstr^.FineTune);
           Input.InputHex2(S, V, $FF);
           CurInstr^.FineTune := ShortInt(V);
@@ -519,7 +519,7 @@ begin
               Dec(CurMenuPos, 14);
             end;
             if CurMenuPos = 0 then
-              Inc(CurMenuPos); 
+              Inc(CurMenuPos);
             if CurMenuPos = 14 then
               Input.InputCursor := 1;
           end;
@@ -671,7 +671,7 @@ begin
                   begin
                     SaveInstrument(S, CurInstr);
                     S := '';
-                  end; 
+                  end;
                   RenderTexts;
                   RenderInstrInfo;
                   Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
@@ -685,7 +685,7 @@ begin
                     if not LoadInstrument(S, CurInstr) then
                       ShowMessageDialog('Error', 'File not found / Invalid format!');
                     S := '';
-                  end;    
+                  end;
                   RenderTexts;
                   RenderInstrInfo;
                   Screen.SetCursorPosition(MenuList[CurMenuPos].X + Input.InputCursor - 1, MenuList[CurMenuPos].Y);
@@ -730,23 +730,23 @@ initialization
   for I := 0 to 13 do
     MenuList[I].X := OP1_X + 1;
   for I := 14 to 27 do
-    MenuList[I].X := OP2_X + 1;  
+    MenuList[I].X := OP2_X + 1;
   for I := 28 to 40 do
     MenuList[I].X := OP3_X + 1;
   for I := 41 to 53 do
     MenuList[I].X := OP4_X + 1;
   // Y
   MenuList[0].Y := 3;
-  MenuList[1].Y := 4;  
+  MenuList[1].Y := 4;
   MenuList[14].Y := 3;
   MenuList[15].Y := 4;
-  MenuList[28].Y := 4; 
+  MenuList[28].Y := 4;
   MenuList[41].Y := 4;
   for I := 7 to 18 do
   begin
     MenuList[I - 5].Y := I;
     MenuList[I + 9].Y := I;
-    MenuList[I + (29 - 7)].Y := I;     
+    MenuList[I + (29 - 7)].Y := I;
     MenuList[I + (42 - 7)].Y := I;
   end;
 

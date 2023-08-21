@@ -106,7 +106,7 @@ begin
       Exit(I);
   Result := 0;
 end;
-      
+
 function Min(const V1, V2: Integer): Integer; inline;
 begin
   if V1 < V2 then

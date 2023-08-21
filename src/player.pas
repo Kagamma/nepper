@@ -8,7 +8,7 @@ uses
   Adlib;
 
 var
-  IsPlaying: Boolean = False; 
+  IsPlaying: Boolean = False;
   ChannelEnabledList: array[0..MAX_CHANNELS - 1] of Boolean;
 
 procedure Start(const PatternIndex: Byte = 0);
@@ -189,7 +189,7 @@ procedure Play;
 
   procedure AdjustVolume(const V: Byte);
   begin
-    if NepperRec.IsOPL3 and ((CurChannel <= 2) or (CurChannel >= 6)) then
+    if (TAdlibOPLKind(NepperRec.OPLKind) = aokOPL3Op4) and ((CurChannel <= 2) or (CurChannel >= 6)) then
       case Instruments[PCell^.InstrumentIndex].AlgFeedback.Alg2 of
         0:
           begin
@@ -228,7 +228,7 @@ procedure Play;
   end;
 
   procedure Vibrato;
-  begin 
+  begin
     if CurTicks = 0 then
     begin
       if Byte(PCell^.Note) <> 0 then
@@ -413,7 +413,7 @@ AtBeginning:
                 $F:
                   begin
                     case Byte(Word(PCell^.Effect.V2)) of
-                      0: // Stop note       
+                      0: // Stop note
                         begin
                           Adlib.NoteClear(CurChannel);
                           LastInstrumentList[CurChannel] := $FF;
@@ -533,8 +533,8 @@ AfterPlayingNote:
     CurTicks := 0;
     // Change to next PPattern
     if CurCell >= $3F then
-    begin    
-      Move(NepperRec.Instruments[0], Instruments[0], SizeOf(Instruments)); 
+    begin
+      Move(NepperRec.Instruments[0], Instruments[0], SizeOf(Instruments));
       FillChar(LastInstrumentList[0], SizeOf(LastInstrumentList), $FF);
       if IsPatternOnly then
       begin
@@ -581,7 +581,7 @@ var
 begin
   IsPlaying := False;
   FillChar(BlankInstr, SizeOf(BlankInstr), 0);
-  BlankInstr.Operators[0].Volume.Total := $3F;      
+  BlankInstr.Operators[0].Volume.Total := $3F;
   BlankInstr.Operators[1].Volume.Total := $3F;
   BlankInstr.Operators[2].Volume.Total := $3F;
   BlankInstr.Operators[3].Volume.Total := $3F;

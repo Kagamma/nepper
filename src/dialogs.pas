@@ -65,7 +65,7 @@ begin
   Screen.WriteTextMid(40, 12, $3F, Text);
   Keyboard.WaitForInput;
   Screen.WriteText(20, 10, 0, '', 40);
-  Screen.WriteText(20, 11, 0, '', 40); 
+  Screen.WriteText(20, 11, 0, '', 40);
   Screen.WriteText(20, 12, 0, '', 40);
   Screen.WriteText(20, 13, 0, '', 40);
   KBInput.ScanCode := $FF;
@@ -148,13 +148,13 @@ begin
           Break;
         end;
       SCAN_UP:
-        begin 
+        begin
           if HelpAnchor > 0 then
           begin
             Dec(HelpAnchor);
             RenderScrollUp;
           end;
-        end;   
+        end;
       SCAN_DOWN:
         begin
           if HelpSize - HelpAnchor > 25 then
@@ -169,7 +169,7 @@ begin
           if HelpAnchor < 0 then
             HelpAnchor := 0;
           RenderAll;
-        end;    
+        end;
       SCAN_PGDN:
         begin
           Inc(HelpAnchor, 22);
