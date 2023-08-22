@@ -41,7 +41,7 @@ procedure RenderSongInfoFast;
 var
   I, P: Byte;
   S: String2;
-begin   
+begin
   WriteText(10, 5, $0F, NepperRec.Name, 40);
   for I := 0 to $F do
   begin
@@ -113,7 +113,7 @@ procedure LoopEditSheet;
   end;
 
   procedure MoveRight(Step: Byte);
-  begin 
+  begin
     if Integer(PatternIndex) + Integer(Step) > $FF then
       Step := $FF - PatternIndex;
     if PatternIndex + Step <= High(NepperRec.Orders) then
@@ -122,7 +122,7 @@ procedure LoopEditSheet;
       if PatternIndex > PatternAnchor + $F then
       begin
         PatternAnchor := PatternIndex - $F;
-        RenderSongInfoFast;         
+        RenderSongInfoFast;
         Screen.SetCursorPosition(10 + 15 * 3, 7);
       end else
         Screen.SetCursorPosition(10 + (PatternIndex - PatternAnchor) * 3, 7);
@@ -270,7 +270,7 @@ begin
             begin
               if NepperRec.ChannelCount < MAX_CHANNELS then
               begin
-                Inc(NepperRec.ChannelCount);  
+                Inc(NepperRec.ChannelCount);
                 EdPattern.ResetParams;
                 EdPattern.RenderPatternInfo;
               end;
@@ -284,14 +284,14 @@ begin
               begin
                 SaveSong(S);
                 S := '';
-              end;   
+              end;
               RenderSongInfo;
               EdPattern.RenderPatternInfo;
               Screen.SetCursorPosition(OldCursorX, OldCursorY);
             end;
           'l':
             begin
-              S := '';  
+              S := '';
               OldCursorX := CursorX;
               OldCursorY := CursorY;
               if ShowInputDialog('Load song', S) then
