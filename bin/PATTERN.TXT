@@ -3,6 +3,17 @@ Default speed/ticks: 6
 
 When OPL3 4-Op mode is enabled, only column 1,2,3,7,8,9 perform 4-operator synth.
 
+List of additional hotkeys
+==========================
+
+[Ctrl-1..9] ENABLE / DISABLE CHANNELS
+-------------------------------------
+Usable in Pattern editing mode.
+
+[F5] COPY MARK
+--------------
+When use with Ctrl-C/X, only copy/cut from mark position to cursor position.
+
 List of effects
 ===============
 
