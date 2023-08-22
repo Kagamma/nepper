@@ -241,7 +241,7 @@ begin
       SCAN_SPACE:
         begin
           if not IsPlaying then
-            Player.Start($FF)
+            Player.Start(PatternIndex, False)
           else
             Player.Stop;
         end

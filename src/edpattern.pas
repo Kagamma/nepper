@@ -803,7 +803,7 @@ begin
       SCAN_SPACE:
         begin
           if not IsPlaying then
-            Player.Start(CurPatternIndex)
+            Player.Start(CurPatternIndex, True)
           else
             Player.Stop;
         end

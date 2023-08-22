@@ -11,7 +11,7 @@ var
   IsPlaying: Boolean = False;
   ChannelEnabledList: array[0..MAX_CHANNELS - 1] of Boolean;
 
-procedure Start(const PatternIndex: Byte = 0);
+procedure Start(const PatternIndex: Byte; const IsPatternOnlyLocal: Boolean);
 procedure Play;
 procedure Stop;
 
@@ -72,7 +72,7 @@ begin
   FillChar(VolumeModList[0], SizeOf(VolumeModList), 0);
 end;
 
-procedure Start(const PatternIndex: Byte = 0);
+procedure Start(const PatternIndex: Byte; const IsPatternOnlyLocal: Boolean);
 begin
   Stop;
   CurTicks := 0;
@@ -82,11 +82,11 @@ begin
   BD.Vibrato := 1;
   BD.AMDepth := 1;
   Adlib.WriteReg($BD, Byte(BD));
-  if PatternIndex <> $FF then
+  CurPatternIndex := PatternIndex;
+  IsPatternOnly := IsPatternOnlyLocal;
+  if IsPatternOnlyLocal then
   begin
-    CurPatternIndex := PatternIndex;
     PPattern := Formats.Patterns[PatternIndex];
-    IsPatternOnly := True;
     ColorStatus := $19;
     Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, '--');
     Screen.WriteTextFast1(ScreenPointer + 74, ColorStatus, '/');
@@ -95,9 +95,7 @@ begin
     Screen.WriteTextFast1(ScreenPointer + 77, ColorStatus, '/');
   end else
   begin
-    CurPatternIndex := 0;
     PPattern := Formats.Patterns[NepperRec.Orders[CurPatternIndex]];
-    IsPatternOnly := False;
     ColorStatus := $1A;
     HexStrFast2(CurPatternIndex, GS2);
     Screen.WriteTextFast2(ScreenPointer + 72, ColorStatus, GS2);
