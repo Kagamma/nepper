@@ -809,7 +809,7 @@ begin
         end
       else
         case KBInput.CharCode of
-          '+':
+          '+', '=':
             begin
               if CurPatternIndex < High(Formats.Patterns) then
               begin
@@ -827,7 +827,7 @@ begin
                 RenderPatternInfo;
               end;
             end;
-          '<':
+          '<', ',':
             begin
               if CurInstrIndex > 0 then
               begin
@@ -836,7 +836,7 @@ begin
                 Adlib.SetInstrument(CurChannel, @NepperRec.Instruments[CurInstrIndex]);
               end;
             end;
-          '>':
+          '>', '.':
             begin
               if CurInstrIndex < 31 then
               begin

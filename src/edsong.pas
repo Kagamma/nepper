@@ -257,7 +257,7 @@ begin
               NepperRec.Orders[PatternIndex] := SONG_REPEAT;
               WriteText(10 + (PatternIndex - PatternAnchor) * 3, 7, $0F, 'R', 2);
             end;
-          '<':
+          '<', ',':
             begin
               if NepperRec.ChannelCount > 1 then
               begin
@@ -266,7 +266,7 @@ begin
                 EdPattern.RenderPatternInfo;
               end;
             end;
-          '>':
+          '>', '.':
             begin
               if NepperRec.ChannelCount < MAX_CHANNELS then
               begin

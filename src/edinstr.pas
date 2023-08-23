@@ -608,7 +608,7 @@ begin
         else
           begin
             case KBInput.CharCode of
-              '+':
+              '+', '=':
                 begin
                   if TestNote.Octave <= ADLIB_MAX_OCTAVE - 1 then
                   begin
@@ -644,7 +644,7 @@ begin
                   WriteText(77, 22, $0F, ADLIB_NOTESYM_TABLE[TestNote.Note]);
                   WriteText(79, 22, $0F, S);
                 end;
-              '<':
+              '<', ',':
                 begin
                   if CurInstrPos > 0 then
                   begin
@@ -654,7 +654,7 @@ begin
                     RenderInstrInfo;
                   end;
                 end;
-              '>':
+              '>', '.':
                 begin
                   if CurInstrPos < High(NepperRec.Instruments) then
                   begin
