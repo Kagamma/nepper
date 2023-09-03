@@ -11,6 +11,12 @@ The program supports the following file formats:
 - `.NIS` (Nepper's InStrument) [R/W]
 - `.RAD` (Reality AdLib Tracker v1) [R]
 
+While the program can load RAD files, it might sound weird due to incompatible playback engine.
+
+Documentation:
+- See `bin\FORMAT.TXT` for `NTR` file format, `bin\INSTR.TXT` and `bin\PATTERN.TXT` for how to use the program.
+- You can also access `bin\INSTR.TXT` and `bin\PATTERN.TXT` in Nepper by pressing `F1`.
+
 ![1](/doc/img/nepper_000.png)
 
 ![2](/doc/img/nepper_001.png)

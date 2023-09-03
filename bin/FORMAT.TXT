@@ -1,0 +1,38 @@
+HEADER
+======
+- Magic number: 2 bytes, always equals to 0xBAB0.
+- Version: 1 byte, equals to 1.
+- Song name: array of 40 bytes.
+- Ticks: 1 byte.
+- Clock speed: 1 byte.
+- OPL mode: 1 byte. 0 = OPL2, 1 = OPL3 4-op, 2 = OPL3 2-op.
+- Channel count: 1 byte.
+
+INSTRUMENTS
+===========
+An array of 32 instrument record:
+- Operators: An array of 4 operators, contains the following fields:
+  + Effect: 1 byte, register 20-35.
+  + Volume: 1 byte, register 40-55.
+  + AttackDecay: 1 byte, register 60-75.
+  + SustainRelease: 1 byte, register 80-95.
+  + Waveform: 1 byte, register E0-F5.
+- Algorithm and Feedback: 1 byte, register C0-C8.
+- Fine-tune: 1 byte.
+- Is 4-operator: 1 byte.
+- Instrument name: array of 20 bytes.
+
+ORDERS
+======
+An array of 256 bytes contains pattern indices.
+
+PATTERNS
+========
+Read the file for patterns until it reach EOF. Pattern has the following record:
+- Pattern index: 1 byte.
+- Channel index: 1 byte.
+- Start of row: 1 byte.
+- Cells: an array of notes & effects, start from "start of row" to 63.
+  + Note: 1 byte. bit 0..3 is note value (C-..B-), while bit 4..7 is octave.
+  + Effect: 2 bytes. First byte is effect. Second byte is effect's XY values.
+  + Instrument index: 1 byte.
