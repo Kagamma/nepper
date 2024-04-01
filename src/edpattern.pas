@@ -732,13 +732,14 @@ begin
               Inc(CurChannel);
               RenderInstrument;
               DisableMark;
+              Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor);
             end;
           end else
           begin
             CurCellPart := 1;
             DisableMark;
+            Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor);
           end;
-          Screen.SetCursorPosition(PATTERN_SCREEN_START_X + (CurChannel * PATTERN_CHANNEL_WIDE) + (CurCellPart * 5), PATTERN_SCREEN_START_Y + CurCell - Anchor);
         end;
       SCAN_DOWN:
         begin
