@@ -31,6 +31,20 @@ begin
   FillByte(ScreenPointer[0], 80*25*2, 0);
 end;
 
+{$ifdef NO_INT10H}
+procedure SetCursorPosition(const X, Y: Byte);
+var
+  P: Word;
+begin
+  P := Y * 80 + X;
+  Port[$3D4] := $E;
+  Port[$3D5] := Byte(P shr 8);
+  Port[$3D4] := $F;
+  Port[$3D5] := Byte(P);
+  CursorX := X;
+  CursorY := Y;
+end;
+{$else}
 procedure SetCursorPosition(const X, Y: Byte); assembler;
 asm
   mov ah,2
@@ -41,6 +55,7 @@ asm
   xor bh,bh
   int $10
 end;
+{$endif}
 
 procedure IncCursorX;
 begin
