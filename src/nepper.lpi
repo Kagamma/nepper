@@ -21,7 +21,7 @@
           <Version Value="11"/>
           <PathDelim Value="\"/>
           <Target>
-            <Filename Value="../bin/NEPPER.EXE"/>
+            <Filename Value="../bin/NEP386.EXE"/>
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
@@ -146,7 +146,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="../bin/NEPPER.EXE"/>
+      <Filename Value="../bin/NEP88.EXE"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
