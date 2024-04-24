@@ -17,6 +17,9 @@ Documentation:
 - See `bin\FORMAT.TXT` for `NTR` file format, `bin\INSTR.TXT` and `bin\PATTERN.TXT` for how to use the program.
 - You can also access `bin\INSTR.TXT` and `bin\PATTERN.TXT` in Nepper by pressing `F1`.
 
+How to build:
+- You need a Free Pascal cross-compiler for msdos-8086, with Compact memory model.
+
 ![1](/doc/img/nepper_000.png)
 
 ![2](/doc/img/nepper_001.png)
